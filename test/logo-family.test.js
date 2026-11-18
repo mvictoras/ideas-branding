@@ -17,8 +17,9 @@ const RAMP = ["#1e3a8a", "#1d4ed8", "#0284c7", "#0ea5e9", "#14b8a6", "#84cc16", 
 const INK = "#0b1f3a";
 const WHITE = "#ffffff";
 const TAGLINE = "intelligent data exploration assistant for science";
-// The Horizontal Lockup sets the Tagline on these two lines, as in the website header.
-const HORIZONTAL_LINES = ["intelligent data exploration", "assistant for science"];
+// The Horizontal Lockup sets the Tagline on these three lines, as the www-ideas
+// prototype header wraps it.
+const HORIZONTAL_LINES = ["intelligent data", "exploration", "assistant for science"];
 // What each colour version paints the Tagline and the Volume Grid in.
 const FOREGROUND = { "color-on-light": INK, "color-on-ink": WHITE, "mono-ink": INK, "mono-white": WHITE };
 
@@ -207,7 +208,7 @@ test("the Tagline reads exactly 'intelligent data exploration assistant for scie
       assert.deepEqual([...paints(byId(svg, "tagline"))], [FOREGROUND[version]], `${where} Tagline colour`);
 
       const lines = readTaglineGlyphs(svg);
-      if (piece === "horizontal-lockup") assert.equal(lines.length, 2, `${where} should set the Tagline on two lines`);
+      if (piece === "horizontal-lockup") assert.equal(lines.length, 3, `${where} should set the Tagline on three lines`);
       // Split the Tagline at word boundaries into lines with the same glyph counts.
       const words = TAGLINE.split(" ");
       const expectedLines = [];

@@ -24,7 +24,7 @@ Outputs, under `build/logo/<piece>/`:
 |---|---|
 | `wordmark` | The Wordmark alone |
 | `wordmark-hero` | The Wordmark on the Volume Grid, for large hero uses only |
-| `horizontal-lockup` | The Wordmark with the two-line Tagline beside it, as in the website header |
+| `horizontal-lockup` | The Wordmark with the three-line Tagline beside it, as in the website header |
 | `stacked-lockup` | The Wordmark with the Tagline beneath it, for square spaces |
 
 Each piece comes in four colour versions. All have transparent backgrounds:

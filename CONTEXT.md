@@ -27,7 +27,7 @@ _Avoid_: logotype, text logo
 _Avoid_: subtitle, slogan
 
 **Horizontal Lockup**:
-The Wordmark with the Tagline set beside it on two lines, as in the website header.
+The Wordmark with the Tagline set beside it on three lines, as in the website header.
 _Avoid_: logo + text, header logo, banner
 
 **Stacked Lockup**:
