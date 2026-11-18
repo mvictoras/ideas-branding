@@ -244,35 +244,40 @@ for (const name of NAVY) {
 }
 
 /**
- * The content-slide footer of a layout: the Icon at left, the slide-number
- * field in the centre, the small Partner Strip at right. Returns its top.
+ * The content-slide footer of a layout: the Wordmark at left, the small
+ * Partner Strip in the centre, the slide-number field at right. Returns its top.
  */
 function assertContentFooter(pkg, all) {
-  const icons = all.filter((s) => s.kind === "pic" && sameImage(s, logoImage("icon", "color-on-light")));
-  assert.equal(icons.length, 1, "one colour-on-light Icon");
-  const icon = icons[0].box;
+  const marks = all.filter((s) => s.kind === "pic" && sameImage(s, logoImage("wordmark", "color-on-light")));
+  assert.equal(marks.length, 1, "one colour-on-light Wordmark");
+  const mark = marks[0].box;
+  const svg = readBuilt("logo/wordmark/ideas-wordmark-color-on-light.svg").toString();
+  const [, , w, h] = svg.match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number);
+  assert.ok(Math.abs(mark.width / mark.height / (w / h) - 1) < 0.005, "Wordmark not stretched");
+  assert.ok(!all.some((s) => s.kind === "pic" && sameImage(s, logoImage("icon", "color-on-light"))), "no Icon in the footer");
 
   const numbers = all.filter((s) => s.kind === "sp" && descendants(s.el, NS.a, "fld").some((f) => f.getAttribute("type") === "slidenum"));
   assert.equal(numbers.length, 1, "one slide-number field");
   const number = numbers[0];
   // On the layout itself, not a placeholder that shows only when slide numbers are switched on.
   assert.equal(number.placeholder, null, "slide number always shown");
-  assert.ok(near(number.box.x + number.box.width / 2, SLIDE.width / 2, 0.01), "slide number centred");
-  assert.equal(child(descendants(number.el, NS.a, "p")[0], NS.a, "pPr")?.getAttribute("algn"), "ctr", "slide number text centred");
+  assert.equal(child(descendants(number.el, NS.a, "p")[0], NS.a, "pPr")?.getAttribute("algn"), "r", "slide number text right-aligned");
 
   const strip = assertIsStrip(partnerLogos(all), "small");
 
-  assert.ok(right(icon) < SLIDE.width / 3, "Icon at left");
-  assert.ok(strip.x > SLIDE.width / 3 && right(strip) <= SLIDE.width, "strip at right");
-  assert.ok(right(number.box) < strip.x && number.box.x > right(icon), "slide number between Icon and strip");
+  assert.ok(right(mark) < SLIDE.width / 3, "Wordmark at left");
+  assert.ok(near(strip.x + strip.width / 2, SLIDE.width / 2, 0.01), "strip centred");
+  assert.ok(number.box.x > (2 * SLIDE.width) / 3, "slide number at right");
+  assert.ok(right(mark) < strip.x && right(strip) < number.box.x, "Wordmark, then strip, then slide number");
+  assert.ok(near(right(number.box), SLIDE.width - mark.x, 0.01), "slide number's right edge mirrors the Wordmark's left margin");
   const middle = centreY(strip);
-  for (const [what, box] of [["Icon", icon], ["slide number", number.box]]) assert.ok(near(centreY(box), middle, 0.02), `${what} on the footer's centre line`);
-  for (const [what, box] of [["Icon", icon], ["slide number", number.box], ["strip", strip]]) assert.ok(insideSlide(box), `${what} on the slide`);
-  return Math.min(icon.y, number.box.y, strip.y);
+  for (const [what, box] of [["Wordmark", mark], ["slide number", number.box]]) assert.ok(near(centreY(box), middle, 0.02), `${what} on the footer's centre line`);
+  for (const [what, box] of [["Wordmark", mark], ["slide number", number.box], ["strip", strip]]) assert.ok(insideSlide(box), `${what} on the slide`);
+  return Math.min(mark.y, number.box.y, strip.y);
 }
 
 for (const name of LIGHT) {
-  test(`${name}: the Background and the content-slide footer (Icon at left, slide number in the centre, small Partner Strip at right)`, () => {
+  test(`${name}: the Background and the content-slide footer (Wordmark at left, small Partner Strip in the centre, slide number at right)`, () => {
     const { pkg, layout, shapes: all } = layoutShapes(name);
     const fill = backgroundFill(pkg, layout.part) ?? backgroundFill(pkg, pkg.master);
     assert.equal(solidFillColour(pkg, fill), tokens().background, "Background");

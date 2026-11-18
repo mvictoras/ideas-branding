@@ -35,7 +35,7 @@ The Wordmark with the Tagline set beneath it, for square spaces.
 _Avoid_: vertical logo, square logo
 
 **Icon**:
-A single voxel "i", for favicons, avatars, and slide corners. Its Transfer-Function Ramp runs top to bottom, not left to right.
+A single voxel "i", for favicons and avatars. Its Transfer-Function Ramp runs top to bottom, not left to right.
 _Avoid_: favicon (that is one use of the Icon), monogram, symbol
 
 **Volume Grid**:
@@ -75,7 +75,7 @@ A Slide Template layout with the Ink background and the large Partner Strip on a
 _Avoid_: dark layout, title slide (for the set)
 
 **Light Layout**:
-Any other Slide Template layout: the Background, with the content-slide footer (the Icon at left, the slide number in the centre, the small Partner Strip at right).
+Any other Slide Template layout: the Background, with the content-slide footer (the Wordmark at left, the small Partner Strip in the centre, the slide number at right).
 _Avoid_: content slide (for the set), white layout
 
 **Partner**:

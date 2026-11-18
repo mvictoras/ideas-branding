@@ -26,7 +26,7 @@ Outputs, under `build/logo/<piece>/`:
 | `wordmark-hero` | The Wordmark on the Volume Grid, for large hero uses only |
 | `horizontal-lockup` | The Wordmark with the three-line Tagline beside it, as in the website header |
 | `stacked-lockup` | The Wordmark with the Tagline beneath it, for square spaces |
-| `icon` | The voxel "i" alone, for favicons, avatars and slide corners |
+| `icon` | The voxel "i" alone, for favicons and avatars |
 
 Each piece comes in four colour versions. All have transparent backgrounds:
 
@@ -113,7 +113,7 @@ The large strip meets every institution's minimum size. The small strip can't: h
 
 `build/slide-template/ideas-slide-template.potx` is the 16:9 PowerPoint template for every IDEAS presentation. Open it, or put it in PowerPoint's templates folder, and each new presentation starts with the IDEAS theme and layouts. It holds no slides of its own.
 
-It has eleven layouts. The three Navy Layouts have the Ink background and the large Partner Strip on a white band across the bottom. The Light Layouts have the Background and the content-slide footer: the Icon at left, the slide number in the centre and the small Partner Strip at right.
+It has eleven layouts. The three Navy Layouts have the Ink background and the large Partner Strip on a white band across the bottom. The Light Layouts have the Background and the content-slide footer: the Wordmark at left, the small Partner Strip in the centre and the slide number at right.
 
 | Layout | What it has |
 |---|---|
@@ -133,7 +133,7 @@ The theme takes everything from the same sources as the rest of the build:
 
 - **Fonts** (ADR 0001): Helvetica for headings and body. The theme gives Arial's PANOSE, so Windows PowerPoint and Google Slides show Arial, which has the same character widths. A PowerPoint theme has only a heading and a body font, so the code font, Consolas (falling back to Courier New), is recorded in the theme as an extension that apps ignore. PowerPoint won't offer it in the font menu. Set code in Consolas by hand until a layout with a code placeholder adds it.
 - **Colours**: theme accents 1 to 6 are the Theme Accents in chart order, so charts pick them up automatically. Dark 1 and 2 are Ink, Light 1 is white and Light 2 is the Background.
-- **Logo and Partner Strip**: the Horizontal Lockup and the Icon are the built Logo files. Each partner logo is placed as its official file, cropped to its ink and scaled uniformly, at the positions of the built large and small strips, so the template follows `src/partners.json` (including the white band's padding). Pictures carry a PNG for every app, plus the SVG where there is one, which PowerPoint draws as a vector.
+- **Logo and Partner Strip**: the Horizontal Lockup (on the Navy Title and Closing) and the Wordmark (in the footer) are the built Logo files. Each partner logo is placed as its official file, cropped to its ink and scaled uniformly, at the positions of the built large and small strips, so the template follows `src/partners.json` (including the white band's padding). Pictures carry a PNG for every app, plus the SVG where there is one, which PowerPoint draws as a vector.
 - **Slide number**: a text box on the layout holding PowerPoint's slide-number field, so every Light Layout slide shows its number without turning on Insert › Slide Number. Header & Footer can't switch it off.
 
 `test/slide-template.test.js` opens the `.potx` with a PPTX reader and checks all of the above. It also checks that every positioned shape has geometry: Keynote drops the text of a shape without it. Later template work extends these tests.

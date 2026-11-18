@@ -163,13 +163,13 @@ function placeholder(id, { name, type, idx, box, text = {} }) {
  * The slide number: a text box on the layout holding the slide-number field,
  * which each app fills in with the slide's own number. A text box rather than
  * a slide-number placeholder, which shows only once someone turns slide
- * numbers on: the footer always shows it, like the Icon and the Partner Strip.
- * Centred across the slide at height `middle`.
+ * numbers on: the footer always shows it, like the Wordmark and the Partner Strip.
+ * Right-aligned with its right edge at `right`, centred on height `middle`.
  */
 const SLIDE_NUMBER_SIZE = 12; // pt
-const slideNumber = (id, brand, middle) => {
-  const box = { x: (SLIDE.widthIn - SLIDE_NUMBER_BOX.width) / 2, y: middle - SLIDE_NUMBER_BOX.height / 2, ...SLIDE_NUMBER_BOX };
-  return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="Slide Number"/><p:cNvSpPr txBox="1"/><p:nvPr userDrawn="1"/></p:nvSpPr><p:spPr>${xfrm(box)}${RECT}<a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:fld id="{B6F15528-21DE-4FAA-801E-634DDDAF4B2B}" type="slidenum"><a:rPr lang="en-US" sz="${SLIDE_NUMBER_SIZE * 100}">${solidFill(brand.colours.ink)}<a:latin typeface="+mn-lt"/></a:rPr><a:t>‹#›</a:t></a:fld></a:p></p:txBody></p:sp>`;
+const slideNumber = (id, brand, right, middle) => {
+  const box = { x: right - SLIDE_NUMBER_BOX.width, y: middle - SLIDE_NUMBER_BOX.height / 2, ...SLIDE_NUMBER_BOX };
+  return `<p:sp><p:nvSpPr><p:cNvPr id="${id}" name="Slide Number"/><p:cNvSpPr txBox="1"/><p:nvPr userDrawn="1"/></p:nvSpPr><p:spPr>${xfrm(box)}${RECT}<a:noFill/></p:spPr><p:txBody><a:bodyPr wrap="none" lIns="0" tIns="0" rIns="0" bIns="0" anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="r"/><a:fld id="{B6F15528-21DE-4FAA-801E-634DDDAF4B2B}" type="slidenum"><a:rPr lang="en-US" sz="${SLIDE_NUMBER_SIZE * 100}">${solidFill(brand.colours.ink)}<a:latin typeface="+mn-lt"/></a:rPr><a:t>‹#›</a:t></a:fld></a:p></p:txBody></p:sp>`;
 };
 
 /** Fixed text on a layout: a text box, not a placeholder, so it can't be deleted or retyped on a slide. */
@@ -346,25 +346,24 @@ function closingLayout(brand, lockup, strip, whiteBand) {
   });
 }
 
-// The content-slide footer: the Icon at left, the slide number in the centre
-// and the small Partner Strip at right.
+// The content-slide footer: the Wordmark at left, the small Partner Strip in
+// the centre and the slide number at right, both ends on the content margin.
 const FOOTER_BOTTOM = 0.1; // in, from the strip's clear space to the slide edge
-const FOOTER_RIGHT = 0.35; // in, from the strip's clear space to the slide edge
-const FOOTER_ICON_HEIGHT = 0.5;
+const FOOTER_WORDMARK_HEIGHT = 0.5; // in, the built Wordmark file with its own padding
 const SLIDE_NUMBER_BOX = { width: 1, height: 0.4 };
 
 /** Where the content-slide footer sits: the strip's top, its centre line and the footer's top edge, in inches. */
 function footer(strip) {
   const stripTop = SLIDE.heightIn - FOOTER_BOTTOM - sizeIn(strip).height;
   const middle = stripTop + sizeIn(strip).height / 2;
-  return { stripTop, middle, top: Math.min(stripTop, middle - FOOTER_ICON_HEIGHT / 2, middle - SLIDE_NUMBER_BOX.height / 2) };
+  return { stripTop, middle, top: Math.min(stripTop, middle - FOOTER_WORDMARK_HEIGHT / 2, middle - SLIDE_NUMBER_BOX.height / 2) };
 }
 
 /**
  * A light layout: `content(tree, footerTop)` adds its placeholders, which must
  * end above `footerTop`, then the footer is drawn.
  */
-function contentLayout(name, type, brand, icon, strip, content) {
+function contentLayout(name, type, brand, wordmark, strip, content) {
   return {
     name,
     type,
@@ -373,10 +372,13 @@ function contentLayout(name, type, brand, icon, strip, content) {
       const { stripTop, middle, top } = footer(strip);
       if (BODY_BOX.y + BODY_BOX.height > top) throw new Error(`${name}: the master's text overlaps the footer`);
       content(tree, top);
-      tree.add((id) => slideNumber(id, brand, middle));
-      const iconBox = { x: MARGIN, y: middle - FOOTER_ICON_HEIGHT / 2, width: FOOTER_ICON_HEIGHT * svgAspect(icon.svg), height: FOOTER_ICON_HEIGHT };
-      tree.add((id) => picture(pkg, part, id, { name: "Icon", description: brand.wordmark.text, box: iconBox, image: icon }));
-      partnerStrip(pkg, part, tree, strip, SLIDE.widthIn - FOOTER_RIGHT - sizeIn(strip).width, stripTop);
+      const markBox = { x: MARGIN, y: middle - FOOTER_WORDMARK_HEIGHT / 2, width: FOOTER_WORDMARK_HEIGHT * svgAspect(wordmark.svg), height: FOOTER_WORDMARK_HEIGHT };
+      const stripX = (SLIDE.widthIn - sizeIn(strip).width) / 2;
+      const numberRight = SLIDE.widthIn - MARGIN;
+      if (markBox.x + markBox.width > stripX || stripX + sizeIn(strip).width > numberRight - SLIDE_NUMBER_BOX.width) throw new Error(`${name}: the footer's Wordmark, strip and slide number overlap`);
+      tree.add((id) => picture(pkg, part, id, { name: "Wordmark", description: brand.wordmark.text, box: markBox, image: wordmark }));
+      partnerStrip(pkg, part, tree, strip, stripX, stripTop);
+      tree.add((id) => slideNumber(id, brand, numberRight, middle));
       return { tree };
     },
   };
@@ -391,8 +393,8 @@ const columns = (top = BODY_BOX.y, height = BODY_BOX.height) => {
   return [BODY_BOX.x, BODY_BOX.x + width + COLUMN_GAP].map((x) => ({ x, y: top, width, height }));
 };
 
-function lightLayouts(brand, icon, strip) {
-  const layout = (name, type, content) => contentLayout(name, type, brand, icon, strip, content);
+function lightLayouts(brand, wordmark, strip) {
+  const layout = (name, type, content) => contentLayout(name, type, brand, wordmark, strip, content);
   return {
     // A title and a numbered list of agenda items.
     agenda: layout("Agenda", "cust", (tree) => {
@@ -443,13 +445,13 @@ function lightLayouts(brand, icon, strip) {
 
 /**
  * Builds the .potx from the brand source, the built Logo pieces and the
- * Partner Strip layouts: `lockup` and `icon` are { svg, png } (the
- * color-on-ink Horizontal Lockup and the color-on-light Icon), `strips` is
+ * Partner Strip layouts: `lockup` and `wordmark` are { svg, png } (the
+ * color-on-ink Horizontal Lockup and the color-on-light Wordmark), `strips` is
  * { large, small } from layOutStrip and `whiteBand` is strip.whiteBand from
  * src/partners.json. Returns the zipped package as a Buffer.
  */
-export function slideTemplate({ brand, lockup, icon, strips, whiteBand }) {
-  const light = lightLayouts(brand, icon, strips.small);
+export function slideTemplate({ brand, lockup, wordmark, strips, whiteBand }) {
+  const light = lightLayouts(brand, wordmark, strips.small);
   const layouts = [
     navyTitleLayout(brand, lockup, strips.large, whiteBand),
     light.agenda,
