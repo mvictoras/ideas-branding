@@ -83,5 +83,5 @@ const logoFiles = (piece, version) => {
 };
 write(
   "slide-template/ideas-slide-template.potx",
-  slideTemplate({ brand, wordmark: logoFiles("wordmark", "color-on-ink"), icon: logoFiles("icon", "color-on-light"), strips, whiteBand: stripConfig.strip.whiteBand }),
+  slideTemplate({ brand, lockup: logoFiles("horizontal-lockup", "color-on-ink"), icon: logoFiles("icon", "color-on-light"), strips, whiteBand: stripConfig.strip.whiteBand }),
 );

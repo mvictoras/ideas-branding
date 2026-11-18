@@ -244,11 +244,12 @@ function svgAspect(svg) {
 
 // ---- Layouts ----------------------------------------------------------------
 
-// Navy Title: Ink background, the Wordmark, title, speaker, venue and date,
+// Navy Title: Ink background, the Horizontal Lockup, title, speaker, venue and date,
 // and the large Partner Strip on a white band across the bottom.
-const TITLE_WORDMARK = { x: MARGIN, y: 0.6, width: 3.4 };
+// Sized by height, so the Wordmark inside it is as tall as it was on its own.
+const TITLE_LOCKUP = { x: MARGIN, y: 0.6, height: 1 };
 
-function navyTitleLayout(brand, wordmark, strip, whiteBand) {
+function navyTitleLayout(brand, lockup, strip, whiteBand) {
   const { ink, white } = brand.colours;
   return {
     name: "Navy Title",
@@ -266,10 +267,10 @@ function navyTitleLayout(brand, wordmark, strip, whiteBand) {
       // The fields stack up from just above the band; the title sits on top of them.
       let y = band.y - 0.35 - fields.reduce((sum, f) => sum + f.height, 0);
       const title = { x: MARGIN, y: y - 0.15 - 1.6, width: textWidth, height: 1.6 };
-      const mark = { ...TITLE_WORDMARK, height: TITLE_WORDMARK.width / svgAspect(wordmark.svg) };
-      if (title.y < mark.y + mark.height) throw new Error("Navy Title: the title overlaps the Wordmark");
+      const mark = { ...TITLE_LOCKUP, width: TITLE_LOCKUP.height * svgAspect(lockup.svg) };
+      if (title.y < mark.y + mark.height) throw new Error("Navy Title: the title overlaps the Horizontal Lockup");
 
-      tree.add((id) => picture(pkg, part, id, { name: "Wordmark", description: brand.wordmark.text, box: mark, image: wordmark }));
+      tree.add((id) => picture(pkg, part, id, { name: "Horizontal Lockup", description: `${brand.wordmark.text}: ${brand.tagline.lines.join(" ")}`, box: mark, image: lockup }));
       tree.add((id) => placeholder(id, { name: "Title", type: "ctrTitle", box: title, text: { size: 44, bold: true, colour: white, font: "+mj-lt", align: "l", anchor: "b", prompt: "Presentation title" } }));
       for (const f of fields) {
         const box = { x: MARGIN, y, width: textWidth, height: f.height };
@@ -320,13 +321,13 @@ function titleAndContentLayout(brand, icon, strip) {
 
 /**
  * Builds the .potx from the brand source, the built Logo pieces and the
- * Partner Strip layouts: `wordmark` and `icon` are { svg, png } (the
- * color-on-ink Wordmark and the color-on-light Icon), `strips` is
+ * Partner Strip layouts: `lockup` and `icon` are { svg, png } (the
+ * color-on-ink Horizontal Lockup and the color-on-light Icon), `strips` is
  * { large, small } from layOutStrip and `whiteBand` is strip.whiteBand from
  * src/partners.json. Returns the zipped package as a Buffer.
  */
-export function slideTemplate({ brand, wordmark, icon, strips, whiteBand }) {
-  const layouts = [navyTitleLayout(brand, wordmark, strips.large, whiteBand), titleAndContentLayout(brand, icon, strips.small)];
+export function slideTemplate({ brand, lockup, icon, strips, whiteBand }) {
+  const layouts = [navyTitleLayout(brand, lockup, strips.large, whiteBand), titleAndContentLayout(brand, icon, strips.small)];
   const pkg = new Package();
   const presentation = pkg.add("/ppt/presentation.xml", `${CT}presentationml.template.main+xml`, "");
   pkg.relate("/", "officeDocument", presentation);

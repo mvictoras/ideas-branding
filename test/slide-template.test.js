@@ -155,17 +155,17 @@ function assertIsStrip(logos, size) {
 
 const insideSlide = (box) => box.x >= -0.001 && box.y >= -0.001 && right(box) <= SLIDE.width + 0.001 && bottom(box) <= SLIDE.height + 0.001;
 
-test("Navy Title: Ink background, the Wordmark, and title, speaker, venue and date placeholders", () => {
+test("Navy Title: Ink background, the Horizontal Lockup, and title, speaker, venue and date placeholders", () => {
   const { pkg, layout, shapes: all } = layoutShapes("Navy Title");
   assert.equal(solidFillColour(pkg, backgroundFill(pkg, layout.part)), tokens().ink, "Ink background");
 
-  const wordmarks = all.filter((s) => s.kind === "pic" && sameImage(s, logoImage("wordmark", "color-on-ink")));
-  assert.equal(wordmarks.length, 1, "one colour-on-ink Wordmark");
-  const mark = wordmarks[0].box;
-  assert.ok(insideSlide(mark) && bottom(mark) < SLIDE.height / 2, "Wordmark in the top half");
-  const svg = readBuilt("logo/wordmark/ideas-wordmark-color-on-ink.svg").toString();
+  const lockups = all.filter((s) => s.kind === "pic" && sameImage(s, logoImage("horizontal-lockup", "color-on-ink")));
+  assert.equal(lockups.length, 1, "one colour-on-ink Horizontal Lockup");
+  const mark = lockups[0].box;
+  assert.ok(insideSlide(mark) && bottom(mark) < SLIDE.height / 2, "Horizontal Lockup in the top half");
+  const svg = readBuilt("logo/horizontal-lockup/ideas-horizontal-lockup-color-on-ink.svg").toString();
   const [, , w, h] = svg.match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number);
-  assert.ok(Math.abs(mark.width / mark.height / (w / h) - 1) < 0.005, "Wordmark not stretched");
+  assert.ok(Math.abs(mark.width / mark.height / (w / h) - 1) < 0.005, "Horizontal Lockup not stretched");
 
   const placeholders = all.filter((s) => s.placeholder);
   const byName = (name) => placeholders.find((s) => s.name === name);
@@ -176,7 +176,7 @@ test("Navy Title: Ink background, the Wordmark, and title, speaker, venue and da
   assert.equal(new Set(placeholders.map((s) => `${s.placeholder.type}/${s.placeholder.idx}`)).size, placeholders.length, "placeholders are distinct");
   for (const s of placeholders) {
     assert.ok(insideSlide(s.box), `${s.name} on the slide`);
-    assert.ok(!overlaps(s.box, mark), `${s.name} clear of the Wordmark`);
+    assert.ok(!overlaps(s.box, mark), `${s.name} clear of the Horizontal Lockup`);
   }
 });
 
