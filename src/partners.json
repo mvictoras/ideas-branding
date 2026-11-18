@@ -1,0 +1,92 @@
+{
+  "$comment": "The Partner Strip: one entry per institution (Argonne, which leads IDEAS, then the Partners), in strip order. Reorder, add or remove entries here and run `npm test`. Each file is official artwork in assets/partners/raw/, embedded byte-for-byte: never recoloured. Clear space ratios are fractions of the logo's ink height (the artwork trimmed to its visible edges). Minimum sizes are each institution's own rules. See assets/partners/raw/SOURCES.md for the full records.",
+  "institutions": [
+    {
+      "id": "argonne",
+      "name": "Argonne National Laboratory",
+      "file": "argonne-color.svg",
+      "source": ["https://www.anl.gov/brand", "www-ideas/assets/img/logos/argonne.svg"],
+      "rules": {
+        "clearSpace": { "ratio": 0.25, "basis": "No published rule obtained (anl.gov blocks automated access). IDEAS default: a quarter of the logo height." },
+        "minimum": null,
+        "coBranding": "Not retrieved. Argonne leads IDEAS and is placed first."
+      }
+    },
+    {
+      "id": "ucdavis",
+      "name": "UC Davis",
+      "file": "ucdavis-color.png",
+      "source": [
+        "https://communicationsguide.ucdavis.edu/brand-guide/logos/uc-davis-wordmark",
+        "https://communicationsguide.ucdavis.edu/sites/g/files/dgvnsk6246/files/files/page/UC-Davis-Wordmarks-2020.zip"
+      ],
+      "rules": {
+        "clearSpace": { "ratio": 0.97, "basis": "A square equal to the height from the baseline to the top of the initial \"U\" (measured: 0.97 of the wordmark height)." },
+        "minimum": { "widthIn": 1, "basis": "The standard wordmark must be at least 1 inch wide for all uses." },
+        "coBranding": "Never add names or graphic elements to the wordmark or use it as part of a larger mark. Keep it prominent and readable."
+      }
+    },
+    {
+      "id": "cincinnati",
+      "name": "University of Cincinnati",
+      "file": "uc-color.svg",
+      "source": ["https://www.uc.edu/about/marketing-communications/brand-guide/logos-marks.html"],
+      "rules": {
+        "clearSpace": { "ratio": 0.21, "basis": "The height of the letter \"C\" (measured: 0.21 of the primary logo height)." },
+        "minimum": { "widthIn": 0.75, "widthPx": 80, "basis": "Primary logo: at least 80 px wide on screen, 0.75 in in print." },
+        "coBranding": "UC requires co-brands to be made by UC Marketing + Communications with UC leftmost. Waived for the Partner Strip by Cincinnati (#7)."
+      }
+    },
+    {
+      "id": "uic",
+      "name": "University of Illinois Chicago",
+      "file": "uic-color.png",
+      "source": ["https://brand.uic.edu/visual-identity/logos/"],
+      "rules": {
+        "clearSpace": { "ratio": 0.32, "basis": "The height of \"UIC\" in the circle mark (measured: 0.32 of the logo height)." },
+        "minimum": null,
+        "coBranding": "Permitted; order follows the hosting brand, so Argonne first satisfies it."
+      }
+    },
+    {
+      "id": "unl",
+      "name": "University of Nebraska–Lincoln",
+      "file": "unl-horizontal-color.svg",
+      "source": ["https://ucomm.unl.edu/brand/how-use-it/our-marks/", "https://ucomm.unl.edu/system/files/2024-12/Nebraska-N-Name.zip"],
+      "rules": {
+        "clearSpace": { "ratio": 0.25, "basis": "One inside-serif height of the red N (measured: 0.25 of the N height)." },
+        "minimum": { "heightIn": 0.5, "basis": "Minimum height 0.5 in." },
+        "coBranding": "No co-branding rules published. The N must appear; the horizontal N | NEBRASKA lockup is used because it reads at strip height."
+      }
+    },
+    {
+      "id": "kitware",
+      "name": "Kitware",
+      "file": "kitware-color.svg",
+      "source": ["https://www.kitware.com/press-room/", "https://www.kitware.com/"],
+      "rules": {
+        "clearSpace": { "ratio": 0.25, "basis": "No published rule. IDEAS default: a quarter of the logo height." },
+        "minimum": null,
+        "coBranding": "Trademarked; Kitware granted IDEAS permission to use it (#7)."
+      }
+    }
+  ],
+  "strip": {
+    "$comment": "Logos are sized for equal visual weight: a logo of ink aspect ratio a gets height s / a^opticalWeight (0 = equal heights, 0.5 = equal areas). Neighbours are at least `gap` × s apart, and never closer than either one's clear space. Sizes are for the 16:9 Slide Template (13.333 × 7.5 in).",
+    "opticalWeight": 0.5,
+    "gap": 0.35,
+    "sizes": {
+      "large": {
+        "widthIn": 12.6,
+        "use": "Title and Closing slides, on the white band across the bottom. The end logos carry their clear space, so about 0.5 in shows at each slide edge",
+        "pendingWaivers": []
+      },
+      "small": {
+        "widthIn": 5.8,
+        "use": "Content-slide footer, at right",
+        "pendingWaivers": ["cincinnati", "unl"]
+      }
+    },
+    "whiteBand": { "widthIn": 13.333, "paddingIn": 0.15 }
+  }
+}

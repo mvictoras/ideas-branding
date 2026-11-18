@@ -87,6 +87,28 @@ On Ink, do the same for blue and navy.
 
 The Tagline is converted to outlines from `src/fonts/JetBrainsMono-SemiBold.ttf` (SIL Open Font License, see `src/fonts/JetBrainsMono-OFL.txt`), so no output depends on an installed font.
 
+### Partner Strip
+
+`build/partner-strip/` holds the Partner Strip and the cleaned-up logos it is built from (Argonne, which leads IDEAS, and the five Partners), generated from [`src/partners.json`](src/partners.json) and the official files in `assets/partners/raw/` (sources and usage rules in [`SOURCES.md`](assets/partners/raw/SOURCES.md)).
+
+| File | What it is |
+|---|---|
+| `logos/<id>.svg`, `.png` | One institution's logo, trimmed to its visible edges, 1 in of ink height, with that institution's own clear space around it |
+| `ideas-partner-strip-large-on-light.svg`, `.png` | The strip at 12.6 in wide, transparent, for light backgrounds |
+| `ideas-partner-strip-large-white-band.svg`, `.png` | The same strip centred on a 13.333 in white band, for the bottom of navy Title and Closing slides |
+| `ideas-partner-strip-small-on-light.svg`, `.png` | The strip at 5.8 in wide, for the right of the content-slide footer |
+| `ideas-partner-strip-small-white-band.svg`, `.png` | The small strip on a white band |
+
+The SVGs carry their physical size in inches; the PNGs are rendered at 192 dpi.
+
+**No recolouring.** Each logo is the institution's own file, embedded byte for byte and only cropped and scaled uniformly. `test/partners.test.js` checks this for every logo in every file. If a variant is missing, ask the institution for it; never recolour or redraw one.
+
+**Order and membership** come from the order of `institutions` in `src/partners.json`: Argonne first, the universities alphabetically by full name, Kitware last. To add, remove or reorder one, edit that list and run `npm test`. `test/partners.test.js` pins the order the IDEAS lead set, so update its `SPEC_ORDER` in the same change.
+
+**Sizing.** Logos get equal visual weight rather than equal height: a logo whose ink is a times wider than tall is drawn s / √a tall (`strip.opticalWeight` 0.5). Neighbours keep at least `strip.gap` × s between them and never come inside either partner's clear space. Clear space and minimum sizes are each institution's own rules, recorded under its `rules`.
+
+The large strip meets every institution's minimum size. The small strip can't: UNL needs 0.5 in of height and Cincinnati 0.75 in (80 px) of width, more than a footer strip leaves. Those two are listed in `strip.sizes.small.pendingWaivers` while waivers are requested (#7). The test fails if any other logo drops below its minimum, so empty that list once the waivers are granted, or resize.
+
 ## Test
 
 ```sh
@@ -133,5 +155,6 @@ src/pantone-solid-coated.json  candidate Pantone inks for the print table
 src/fonts/                     the Tagline font (JetBrains Mono, OFL) used for outlining
 scripts/                       the build (scripts/build.js is the entry point) and the grid preview
 test/                          checks over build/
-assets/partners/               official partner logos and their sources
+src/partners.json              the Partner Strip: partners in order, files, usage rules, sizes
+assets/partners/raw/           official partner logos and their sources (SOURCES.md)
 ```

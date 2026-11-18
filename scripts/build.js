@@ -1,4 +1,5 @@
-// The one build command: `npm run build`. Recreates build/ from src/brand.json.
+// The one build command: `npm run build`. Recreates build/ from src/brand.json,
+// src/partners.json and the official partner logos in assets/partners/raw/.
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,12 +9,14 @@ import { sceneToSvg } from "./lib/svg.js";
 import { sceneToPdf } from "./lib/pdf.js";
 import { svgToPng } from "./lib/png.js";
 import { icoFromPngs } from "./lib/ico.js";
+import { cleanedLogo, layOutStrip, loadStripConfig, prepareInstitutions, stripOnLight, stripOnWhiteBand } from "./lib/partners.js";
 import { colourTokensCss, colourTokensJson, loadPantoneInks, printTable, printTableCsv, printTableMarkdown } from "./lib/colours.js";
 
 const PNG_WIDTHS = [400, 800, 1200, 2400];
 const FAVICON_SIZES = [16, 32, 48];
 const APPLE_TOUCH_SIZE = 180;
 const AVATAR_SIZE = 512;
+const PARTNER_PNG_DPI = 192; // 2× screen
 const OUT = fileURLToPath(new URL("../build/", import.meta.url));
 
 function write(rel, data) {
@@ -54,3 +57,17 @@ write("colours/ideas-colours.css", colourTokensCss(brand));
 const printRows = printTable(brand, loadPantoneInks());
 write("colours/ideas-print-colours.csv", printTableCsv(printRows));
 write("colours/ideas-print-colours.md", printTableMarkdown(printRows));
+
+console.log("Building build/partner-strip/");
+const stripConfig = loadStripConfig();
+const institutions = prepareInstitutions(stripConfig);
+const writeSvgAndPng = (name, { svg, widthIn }) => {
+  write(`${name}.svg`, svg);
+  write(`${name}.png`, svgToPng(svg, Math.round(widthIn * PARTNER_PNG_DPI)));
+};
+for (const institution of institutions) writeSvgAndPng(`partner-strip/logos/${institution.id}`, cleanedLogo(institution));
+for (const [size, { widthIn }] of Object.entries(stripConfig.strip.sizes)) {
+  const layout = layOutStrip(institutions, stripConfig.strip, widthIn);
+  writeSvgAndPng(`partner-strip/ideas-partner-strip-${size}-on-light`, stripOnLight(layout));
+  writeSvgAndPng(`partner-strip/ideas-partner-strip-${size}-white-band`, stripOnWhiteBand(layout, stripConfig.strip.whiteBand));
+}

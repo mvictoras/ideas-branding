@@ -1,6 +1,6 @@
 // Renders a scene (see logo.js) as SVG.
 
-const escape = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+export const escape = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const attrs = (pairs) =>
   Object.entries(pairs)
     .filter(([, v]) => v !== undefined)

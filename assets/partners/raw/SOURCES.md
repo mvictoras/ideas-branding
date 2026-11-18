@@ -1,6 +1,8 @@
 # Partner logo sources
 
-Retrieved 2026-11-18. Each SVG was checked to be real SVG (it starts with `<svg` or `<?xml`) and to contain no scripts, external references or embedded images. **No recolouring:** every file here is official artwork, used exactly as the institution publishes it. Files we had recoloured (argonne-white, ucdavis-color, uc-horizontal-color, uc-horizontal-white) were deleted on 2026-11-18. Missing variants must come from the institution.
+Retrieved 2026-11-18. Each SVG was checked to be real SVG (it starts with `<svg` or `<?xml`) and to contain no scripts, external references or embedded images. **No recolouring:** every file here is official artwork, used exactly as the institution publishes it. Files we had recoloured (argonne-white, ucdavis-color, uc-horizontal-color, uc-horizontal-white) were deleted on 2026-11-18. The current `ucdavis-color.png` is a different file: the official Aggie Blue wordmark from UC Davis's own download, added later the same day. Missing variants must come from the institution.
+
+`src/partners.json` names the file the Partner Strip uses for each institution, with the clear-space and minimum-size rules below in machine-readable form. Clear-space ratios there were measured on these files (for example, UIC's "UIC" is 0.32 of the logo's height).
 
 | File | Institution | Format | Size / viewBox | Provenance |
 |---|---|---|---|---|
@@ -9,6 +11,7 @@ Retrieved 2026-11-18. Each SVG was checked to be real SVG (it starts with `<svg`
 | unl-white.svg | Univ. of Nebraska–Lincoln | SVG | viewBox 143.8×92 | Official (REV, all white) |
 | unl-horizontal-color.svg | Univ. of Nebraska–Lincoln | SVG | viewBox 111.6×36 | Official (N \| NEBRASKA, right, serif, RGB) |
 | unl-horizontal-white.svg | Univ. of Nebraska–Lincoln | SVG | viewBox 111.6×36 | Official (REV) |
+| ucdavis-color.png | UC Davis | PNG, RGBA, transparent | 3600×623 px | Official 2020 wordmark set, `standard/rgb-png/ucdavis_logo_blue.png`: Aggie Blue `#022851` on transparent, for light backgrounds |
 | ucdavis-white.svg | UC Davis | SVG | viewBox 327.16×83.66 | Official site file: extended logo, gold `#febf10` + white, for dark backgrounds |
 | uc-color.svg | University of Cincinnati | SVG | viewBox 597.48×268.61 | Official primary logo "on white field" (inline SVG on the brand page) |
 | uc-white.svg | University of Cincinnati | SVG | viewBox 597.48×268.61 | Official primary logo "on black field" (red monogram, white text) |
@@ -47,9 +50,18 @@ Retrieved 2026-11-18. Each SVG was checked to be real SVG (it starts with `<svg`
 
 ## UC Davis
 
-- Brand pages: https://communicationsguide.ucdavis.edu/brand-guide and https://brand.ucdavis.edu (both blocked by Cloudflare, HTTP 403)
-- Direct file: https://www.ucdavis.edu/sites/default/files/uc-davis-extended-logo.svg (the extended "UC DAVIS / University of California" wordmark used on www.ucdavis.edu)
-- Usage rules: not retrieved because the brand guide is blocked. The official file uses gold `#febf10`. No official full-colour file for light backgrounds was obtained. It must come from the UC Davis brand guide (download it in a browser).
+- Brand page: https://communicationsguide.ucdavis.edu/brand-guide/logos/uc-davis-wordmark (blocked by Cloudflare, HTTP 403; read via the Internet Archive snapshot of 2025-11-15)
+- Direct files:
+  - https://communicationsguide.ucdavis.edu/sites/g/files/dgvnsk6246/files/files/page/UC-Davis-Wordmarks-2020.zip ("Download UC Davis Wordmarks" on the brand page; fetched through the Internet Archive copy of the same URL). `ucdavis-color.png` is `UC_Davis_Wordmarks 2020/standard/rgb-png/ucdavis_logo_blue.png`, unchanged.
+  - The zip also has standard and extended wordmarks as EPS (CMYK, PMS and an RGB vector set) and PNGs in blue, gold, black and white. The RGB-vector EPS converts with shifted colours (Aggie Blue comes out about `#1a2a4c`), so the PNG, which carries `#022851` exactly, is used. 3600 px wide is enough for the strip at any slide size. Ask UC Davis Strategic Communications for an official SVG if a vector is needed.
+  - https://www.ucdavis.edu/sites/default/files/uc-davis-extended-logo.svg (`ucdavis-white.svg`, gold and white for dark backgrounds; not used in the strip)
+- Usage rules:
+  - The wordmark is the preferred campus identifier. The extended wordmark ("University of California" beneath) is for when the UC-system association matters especially. The strip uses the standard wordmark.
+  - Approved colours: Aggie Blue `#022851`, Aggie Gold `#FFBF00`, black, white, only in the combinations shown (blue on white is one). Never split the wordmark by colour or swap the extended wordmark's colours.
+  - Minimum size: the standard wordmark at least 1 in wide for all uses. The extended wordmark at least 1.5 in wide in print and 2 in (150 px) on screen.
+  - Clear space: a square equal to the height from the baseline to the top of the initial "U", on every side, including page edges.
+  - Use only approved files, scale proportionally, never recreate, distort, add names or graphic elements, or use it as part of a larger mark. Avoid busy backgrounds and poor contrast.
+  - Contact: UC Davis Strategic Communications.
 
 ## University of Cincinnati
 
