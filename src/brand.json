@@ -1,12 +1,12 @@
 {
-  "$comment": "Single source of truth for the IDEAS Logo. Edit here, then run `npm run build`. Letter grids: '#' = Voxel, 'o' = Hollow Voxel, '.' = empty. Option A letterforms from the www-ideas prototype, refined and approved by the IDEAS lead in #3: one hand-placed Hollow Voxel per letter on a stroke end, 5x22 grid. Tests pin the Hollow Voxel positions, so moving one is a deliberate change to the test too.",
+  "$comment": "Single source of truth for the IDEAS Logo. Edit here, then run `npm run build`. Letter grids: '#' = Voxel, 'o' = Hollow Voxel, '.' = empty. Option A letterforms from the www-ideas prototype, refined and approved by the IDEAS lead in #3: one hand-placed Hollow Voxel per letter on a stroke end, 5x22 grid. Tests pin the Hollow Voxel positions, so moving one is a deliberate change to the test too. themeAccents: the six Slide Template accent colours in chart-series order, ramp colours ordered so no neighbouring pair (including 6 back to 1) clashes in normal vision or with protanopia, deuteranopia or tritanopia (#12); keep lime and amber apart.",
   "transferFunctionRamp": ["#1e3a8a", "#1d4ed8", "#0284c7", "#0ea5e9", "#14b8a6", "#84cc16", "#f59e0b"],
   "colours": {
     "ink": "#0b1f3a",
     "background": "#f7f8fb",
     "white": "#ffffff"
   },
-  "themeAccents": ["#1d4ed8", "#0ea5e9", "#14b8a6", "#84cc16", "#f59e0b", "#1e3a8a"],
+  "themeAccents": ["#1d4ed8", "#14b8a6", "#f59e0b", "#0ea5e9", "#1e3a8a", "#84cc16"],
   "wordmark": {
     "text": "IDEAS",
     "letterGap": 1,

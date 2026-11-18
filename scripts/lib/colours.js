@@ -4,6 +4,9 @@ import { readFileSync } from "node:fs";
 
 const PANTONE = new URL("../../src/pantone-solid-coated.json", import.meta.url);
 const PRINT_CAVEAT = "nearest match, verify before printing";
+// The Background is near-white, so it is printed as bare paper, not as an ink (#14).
+const PAPER = "unprinted paper";
+const PAPER_NOTE = "no ink, print as unprinted paper";
 
 export function loadPantoneInks() {
   return JSON.parse(readFileSync(PANTONE, "utf8")).inks;
@@ -102,7 +105,7 @@ function deltaE2000(hexA, hexB) {
 function printColours({ colours, transferFunctionRamp, themeAccents }) {
   return [
     { name: "Ink", hex: colours.ink },
-    { name: "Background", hex: colours.background },
+    { name: "Background", hex: colours.background, paper: true },
     ...transferFunctionRamp.map((hex, i) => {
       const accent = themeAccents.indexOf(hex);
       return { name: `Ramp ${i + 1}${accent >= 0 ? ` (Accent ${accent + 1})` : ""}`, hex };
@@ -110,11 +113,15 @@ function printColours({ colours, transferFunctionRamp, themeAccents }) {
   ];
 }
 
-/** One row per brand colour: CMYK, and the candidate Pantone ink closest by CIEDE2000. */
+/**
+ * One row per brand colour: CMYK, and the candidate Pantone ink closest by
+ * CIEDE2000. A paper colour gets no ink: CMYK 0/0/0/0 and no Pantone.
+ */
 export function printTable(brand, pantoneInks) {
   const inks = Object.entries(pantoneInks);
   if (!inks.length) throw new Error("No Pantone inks to match against");
-  return printColours(brand).map(({ name, hex }) => {
+  return printColours(brand).map(({ name, hex, paper }) => {
+    if (paper) return { name, hex, cmyk: [0, 0, 0, 0], paper: true };
     const nearest = inks
       .map(([pantone, inkHex]) => ({ pantone, pantoneHex: inkHex.toLowerCase(), deltaE: deltaE2000(hex, inkHex) }))
       .reduce((best, ink) => (ink.deltaE < best.deltaE ? ink : best));
@@ -127,9 +134,10 @@ const csvField = (v) => (/[",\r\n]/.test(String(v)) ? `"${String(v).replaceAll('
 
 export function printTableCsv(rows) {
   const header = "name,hex,c,m,y,k,pantone,pantone_hex,delta_e,note";
-  const lines = rows.map((r) =>
-    [r.name, r.hex, ...r.cmyk, r.pantone, r.pantoneHex, r.deltaE.toFixed(1), PRINT_CAVEAT].map(csvField).join(","),
-  );
+  const lines = rows.map((r) => {
+    const ink = r.paper ? [PAPER, "", "", PAPER_NOTE] : [r.pantone, r.pantoneHex, r.deltaE.toFixed(1), PRINT_CAVEAT];
+    return [r.name, r.hex, ...r.cmyk, ...ink].map(csvField).join(",");
+  });
   return [header, ...lines, ""].join("\n");
 }
 
@@ -139,11 +147,16 @@ export function printTableMarkdown(rows) {
     "",
     `**Every Pantone and CMYK value is a ${PRINT_CAVEAT}.** CMYK is an uncalibrated conversion from the screen colour, and each Pantone entry is the closest Solid Coated ink by on-screen colour difference (CIEDE2000, ΔE; under about 2 is hard to tell apart, larger means a visibly different ink). Proof against a physical Pantone swatch book and your printer's profile before any print run.`,
     "",
+    "The Background is near-white, so it is printed as unprinted paper, with no ink.",
+    "",
     "Generated from `src/brand.json` by `npm run build`; do not edit.",
     "",
     "| Colour | Screen (hex) | CMYK (C / M / Y / K) | Nearest Pantone (verify before printing) | ΔE |",
     "|---|---|---|---|---|",
-    ...rows.map((r) => `| ${r.name} | \`${r.hex}\` | ${r.cmyk.join(" / ")} | ${r.pantone} (\`${r.pantoneHex}\`) | ${r.deltaE.toFixed(1)} |`),
+    ...rows.map((r) => {
+      const ink = r.paper ? `Unprinted paper (no ink) | –` : `${r.pantone} (\`${r.pantoneHex}\`) | ${r.deltaE.toFixed(1)}`;
+      return `| ${r.name} | \`${r.hex}\` | ${r.cmyk.join(" / ")} | ${ink} |`;
+    }),
     "",
   ].join("\n");
 }

@@ -5,18 +5,30 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { buildPath, readSource } from "./lib/output.js";
-import { cmykToHex, contrastRatio, deltaE2000 } from "./lib/colour.js";
+import { COLOUR_VISION_DEFICIENCIES, cmykToHex, contrastRatio, deltaE2000, simulateColourVision } from "./lib/colour.js";
 
 // The palette as the spec (#1) fixes it. The source must still say this.
+// The Theme Accent order was changed in #12 so that no neighbouring pair
+// clashes for colour-blind viewers (lime and amber used to sit together).
 const INK = "#0b1f3a";
 const BACKGROUND = "#f7f8fb";
 const WHITE = "#ffffff";
 const RAMP = ["#1e3a8a", "#1d4ed8", "#0284c7", "#0ea5e9", "#14b8a6", "#84cc16", "#f59e0b"];
-const ACCENTS = ["#1d4ed8", "#0ea5e9", "#14b8a6", "#84cc16", "#f59e0b", "#1e3a8a"];
+const ACCENTS = ["#1d4ed8", "#14b8a6", "#f59e0b", "#0ea5e9", "#1e3a8a", "#84cc16"];
 const PRINT_COLOURS = [INK, BACKGROUND, ...RAMP];
 
 const CAVEAT = "nearest match, verify before printing";
+// The Background is near-white: printed as bare paper, not matched to an ink (#14).
+const PAPER = "unprinted paper";
 const WCAG_AA_TEXT = 4.5;
+// WCAG 2.x 1.4.11: chart marks need 3:1 against what they sit on.
+const WCAG_GRAPHICS = 3;
+// Which Theme Accents reach 3:1 as chart marks on each background (#13).
+// The pale ones are kept so charts match the Logo; guidance covers the rest.
+const ACCENTS_FOR_CHARTS_ON = {
+  background: ["#1d4ed8", "#1e3a8a"],
+  ink: ["#14b8a6", "#f59e0b", "#0ea5e9", "#84cc16"],
+};
 // CIEDE2000. About 2 is the smallest difference most people notice side by
 // side; chart series need to read apart at a glance, so ask for far more.
 const MIN_ACCENT_DIFFERENCE = 10;
@@ -71,12 +83,20 @@ test("CSS custom properties match the source definition", () => {
   assert.deepEqual(readCssTokens(), expected);
 });
 
-test("every brand colour has CMYK and Pantone entries in the print table", () => {
+test("every brand colour has a print entry: CMYK, and Pantone or paper", () => {
   const rows = readPrintCsv();
   assert.deepEqual(rows.map((r) => r.hex), PRINT_COLOURS, "one row per brand colour, in order");
   for (const r of rows) {
     const cmyk = ["c", "m", "y", "k"].map((k) => Number(r[k]));
     assert.ok(cmyk.every((v) => Number.isInteger(v) && v >= 0 && v <= 100), `${r.hex} CMYK ${cmyk}`);
+    if (r.hex === BACKGROUND) {
+      assert.deepEqual(cmyk, [0, 0, 0, 0], "the Background prints no ink");
+      assert.equal(r.pantone, PAPER);
+      assert.equal(r.pantone_hex, "");
+      assert.equal(r.delta_e, "");
+      assert.match(r.note, /unprinted paper/, "the Background note says to print it as paper");
+      continue;
+    }
     // An uncalibrated conversion, but it must at least be for this colour.
     assert.ok(deltaE2000(cmykToHex(cmyk), r.hex) < 1.5, `${r.hex} CMYK ${cmyk} is a different colour`);
     assert.match(r.pantone, /^PANTONE .+ C$/, `${r.hex} Pantone`);
@@ -93,7 +113,7 @@ test("the Markdown print table lists every brand colour with the caveat", () => 
     const line = md.split("\n").find((l) => l.startsWith("|") && l.includes(r.hex));
     assert.ok(line, `${r.hex} row`);
     assert.ok(line.includes(`${r.c} / ${r.m} / ${r.y} / ${r.k}`), `${r.hex} CMYK`);
-    assert.ok(line.includes(r.pantone), `${r.hex} Pantone`);
+    assert.ok(line.toLowerCase().includes(r.pantone.toLowerCase()), `${r.hex} Pantone`);
   }
 });
 
@@ -116,4 +136,24 @@ test("adjacent Theme Accents are distinguishable, including 6 back to 1", () => 
     const d = deltaE2000(x, y);
     assert.ok(d >= MIN_ACCENT_DIFFERENCE, `accent ${i + 1} ${x} vs ${y}: ΔE2000 ${d.toFixed(1)}`);
   }
+});
+
+test("adjacent Theme Accents stay distinguishable with colour-vision deficiencies", () => {
+  const { themeAccents: a } = readJsonTokens();
+  for (const deficiency of COLOUR_VISION_DEFICIENCIES) {
+    const seen = a.map((c) => simulateColourVision(c, deficiency));
+    for (let i = 0; i < a.length; i++) {
+      const d = deltaE2000(seen[i], seen[(i + 1) % a.length]);
+      assert.ok(d >= MIN_ACCENT_DIFFERENCE, `${deficiency}: accent ${i + 1} ${a[i]} vs ${a[(i + 1) % a.length]}: ΔE2000 ${d.toFixed(1)}`);
+    }
+  }
+});
+
+test("each Theme Accent reaches 3:1 for chart marks on the backgrounds the guidance says", () => {
+  const { themeAccents, background, ink } = readJsonTokens();
+  const passing = (bg) => themeAccents.filter((c) => contrastRatio(c, bg) >= WCAG_GRAPHICS);
+  assert.deepEqual(passing(background), ACCENTS_FOR_CHARTS_ON.background, "on the Background");
+  assert.deepEqual(passing(ink), ACCENTS_FOR_CHARTS_ON.ink, "on Ink");
+  const nowhere = themeAccents.filter((c) => !passing(background).includes(c) && !passing(ink).includes(c));
+  assert.deepEqual(nowhere, [], "every accent works on at least one background");
 });

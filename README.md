@@ -62,9 +62,28 @@ The Icon is designed to stay legible at 16px, and `test/icon.test.js` checks the
 | `ideas-print-colours.md` | The print table: CMYK and the nearest Pantone ink for Ink, Background and each ramp colour |
 | `ideas-print-colours.csv` | The same table for spreadsheets |
 
-Every CMYK and Pantone value is a **nearest match, verify before printing**. CMYK is an uncalibrated conversion, and the Pantone entry is the closest ink in `src/pantone-solid-coated.json` by on-screen colour difference (CIEDE2000, given as ΔE in the table). Proof against a swatch book before printing.
+Every CMYK and Pantone value is a **nearest match, verify before printing**. CMYK is an uncalibrated conversion, and the Pantone entry is the closest ink in `src/pantone-solid-coated.json` by on-screen colour difference (CIEDE2000, given as ΔE in the table). The Background is near-white, so the table says to print it as unprinted paper rather than as an ink. Proof against a swatch book before printing; the candidate list's own notes say which inks have been cross-checked.
 
-`test/colours.test.js` checks that Ink text on the Background and white text on Ink meet WCAG AA, and that neighbouring Theme Accents differ by at least ΔE 10.
+The Theme Accents are ordered for charts: blue, teal, amber, sky, navy, lime. No two neighbours (including 6 back to 1) clash in normal vision or with protanopia, deuteranopia or tritanopia. Keep lime and amber apart if you reorder them.
+
+#### Charts on light and dark backgrounds
+
+Chart marks need 3:1 contrast with the background (WCAG 1.4.11). The Theme Accents are the Logo's ramp colours, so not all of them reach that everywhere:
+
+| Background | Accents at 3:1 or more | Accents below 3:1 |
+|---|---|---|
+| Background (`#f7f8fb`) | blue `#1d4ed8`, navy `#1e3a8a` | teal, amber, sky, lime (1.9–2.6:1) |
+| Ink (`#0b1f3a`) | teal, amber, sky, lime | blue, navy |
+
+When a pale accent sits on a light background, keep it readable without relying on colour alone:
+
+- Use it for filled areas (bars, areas, large markers), not thin lines or small points.
+- Give lines at least 2px stroke, and outline small markers in Ink.
+- Label series directly, or add patterns or marker shapes, rather than relying on a colour legend.
+
+On Ink, do the same for blue and navy.
+
+`test/colours.test.js` checks that Ink text on the Background and white text on Ink meet WCAG AA. It checks that neighbouring Theme Accents differ by at least ΔE 10, both in normal vision and under simulated colour-vision deficiencies. It also pins the table above.
 
 The Tagline is converted to outlines from `src/fonts/JetBrainsMono-SemiBold.ttf` (SIL Open Font License, see `src/fonts/JetBrainsMono-OFL.txt`), so no output depends on an installed font.
 
@@ -91,7 +110,7 @@ Everything comes from [`src/brand.json`](src/brand.json):
 - `icon.grid`: the Icon, a single voxel "i" on its own grid, same cell grammar. The tittle is solid, so it stays crisp at 16px. `icon.rampSteps` gives the ramp index for each row: unlike the Wordmark, the Icon's ramp runs top to bottom.
 - `wordmark.letterGap`: empty columns between letters.
 - `colours`: Ink and white, used by the one-colour versions and for the Tagline, and the light Background.
-- `themeAccents`: the six Slide Template accent colours, in order, also published as tokens.
+- `themeAccents`: the six Slide Template accent colours, in chart-series order, also published as tokens. The tests check the order stays distinguishable for colour-blind viewers.
 - `tagline.lines`: the Tagline, one entry per line, always lowercase. `tagline.font` is the font it is outlined from.
 
 Edit the file, then run `npm test`.

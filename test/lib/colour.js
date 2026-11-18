@@ -88,3 +88,24 @@ export function cmykToHex([c, m, y, k]) {
   const ch = (v) => Math.round(255 * (1 - v / 100) * (1 - k / 100));
   return "#" + [c, m, y].map((v) => ch(v).toString(16).padStart(2, "0")).join("");
 }
+
+// Machado, Oliveira & Fernandes (2009) simulation matrices, full severity,
+// applied to linear sRGB.
+const CVD_MATRICES = {
+  protanopia: [[0.152286, 1.052583, -0.204868], [0.114503, 0.786281, 0.099216], [-0.003882, -0.048116, 1.051998]],
+  deuteranopia: [[0.367322, 0.860646, -0.227968], [0.280085, 0.672501, 0.047413], [-0.01182, 0.04294, 0.968881]],
+  tritanopia: [[1.255528, -0.076749, -0.178779], [-0.078411, 0.930809, 0.147602], [0.004733, 0.691367, 0.3039]],
+};
+export const COLOUR_VISION_DEFICIENCIES = Object.keys(CVD_MATRICES);
+
+/** How `hex` looks with the given colour-vision deficiency, as sRGB hex. */
+export function simulateColourVision(hex, deficiency) {
+  const m = CVD_MATRICES[deficiency];
+  if (!m) throw new Error(`unknown colour-vision deficiency: ${deficiency}`);
+  const rgb = hexToRgb(hex).map(linear);
+  const encode = (v) => {
+    const c = Math.min(1, Math.max(0, v));
+    return Math.round(255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055));
+  };
+  return "#" + m.map((row) => encode(row[0] * rgb[0] + row[1] * rgb[1] + row[2] * rgb[2]).toString(16).padStart(2, "0")).join("");
+}
