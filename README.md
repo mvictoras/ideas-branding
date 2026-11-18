@@ -41,7 +41,7 @@ Every piece and colour version is written as `ideas-<piece>-<version>.svg`, `.pd
 
 ### Favicons and avatar
 
-`build/favicon/` holds everything a website header or an account profile needs. All three files are the Icon centred on a solid Ink tile: a favicon or an avatar has to survive light and dark backgrounds, and iOS flattens transparency to black, so the tile is never transparent. The ramp Voxels read on Ink in both.
+`build/favicon/` holds everything a website header or an account profile needs. All three files follow the www-ideas prototype favicon: the Icon runs the full height of a solid Ink tile, in chunky square Voxels coloured top to bottom with the ramp. A favicon or an avatar has to survive light and dark backgrounds, so the tile is always Ink. The `.ico` has the prototype's rounded corners. The Apple touch icon and the avatar are flat squares, because iOS flattens transparency to black and each platform crops avatars to its own shape.
 
 | File | What it is |
 |---|---|
@@ -71,9 +71,9 @@ node --test test/wordmark.test.js
 
 Everything comes from [`src/brand.json`](src/brand.json):
 
-- `transferFunctionRamp`: the seven ramp colours, applied to the Voxels by column from left to right.
+- `transferFunctionRamp`: the seven ramp colours, applied to the Wordmark's Voxels by column from left to right.
 - `wordmark.letters`: one five-row grid per letter. `#` is a Voxel, `o` is a Hollow Voxel, `.` is empty.
-- `icon.grid`: the Icon, a single voxel "i" on its own grid, same cell grammar. The tittle is its hand-placed Hollow Voxel.
+- `icon.grid`: the Icon, a single voxel "i" on its own grid, same cell grammar. The tittle is solid, so it stays crisp at 16px. `icon.rampSteps` gives the ramp index for each row: unlike the Wordmark, the Icon's ramp runs top to bottom.
 - `wordmark.letterGap`: empty columns between letters.
 - `colours`: Ink and white, used by the one-colour versions and for the Tagline.
 - `tagline.lines`: the Tagline, one entry per line, always lowercase. `tagline.font` is the font it is outlined from.

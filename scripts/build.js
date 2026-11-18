@@ -39,9 +39,10 @@ for (const piece of PIECES) {
 
 console.log("Building build/favicon/");
 const tile = sceneToSvg(iconTileScene(brand));
+const roundedTile = sceneToSvg(iconTileScene(brand, { rounded: true }));
 write(
   "favicon/favicon.ico",
-  icoFromPngs(FAVICON_SIZES.map((size) => ({ size, png: svgToPng(tile, size) }))),
+  icoFromPngs(FAVICON_SIZES.map((size) => ({ size, png: svgToPng(roundedTile, size) }))),
 );
 write("favicon/apple-touch-icon.png", svgToPng(tile, APPLE_TOUCH_SIZE));
 write(`favicon/avatar-${AVATAR_SIZE}.png`, svgToPng(tile, AVATAR_SIZE));

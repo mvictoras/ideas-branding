@@ -12,8 +12,11 @@ import { readPdf } from "./lib/pdf.js";
 const VERSIONS = ["color-on-light", "color-on-ink", "mono-ink", "mono-white"];
 const PNG_WIDTHS = [400, 800, 1200, 2400];
 const RAMP = ["#1e3a8a", "#1d4ed8", "#0284c7", "#0ea5e9", "#14b8a6", "#84cc16", "#f59e0b"];
-// The ramp applied by column across the Icon's three columns.
-const ICON_RAMP = [RAMP[0], RAMP[2], RAMP[4]];
+// The Icon's ramp runs top to bottom, one step per row, as in the www-ideas
+// prototype favicon: tittle blue, stem sky then teal, base lime. Row 1 is the
+// empty gap under the tittle.
+const ICON_ROW_COLOURS = [[0, RAMP[1]], [2, RAMP[3]], [3, RAMP[4]], [4, RAMP[5]]];
+const ICON_COLOURS = ICON_ROW_COLOURS.map(([, c]) => c);
 const INK = "#0b1f3a";
 const FAVICON_SIZES = [16, 32, 48];
 
@@ -77,31 +80,27 @@ test("the Icon's voxel layout matches the source definition", () => {
   const voxels = readVoxels(readSvg("color-on-light"));
 
   assert.deepEqual(voxelPicture(voxels), expected, "voxel layout");
-  // Pinned so a source edit can't move the mark silently: the Hollow Voxel
-  // tittle, the two-cell stem and the full base bar.
-  assert.deepEqual(
-    voxels.filter((v) => v.hollow).map((v) => [v.row, v.col]),
-    [[0, 1]],
-    "the tittle is the one Hollow Voxel",
-  );
-  assert.equal(voxels.filter((v) => !v.hollow).length, 5, "filled Voxels: two stem rows plus the base bar");
-  assert.equal(voxels.length, 6, "total Voxel count");
+  // Pinned so a source edit can't move the mark silently: the prototype "i" —
+  // a solid tittle, a stem with a serif to its left, and a full base bar.
+  assert.deepEqual(voxelPicture(voxels), [".#.", "...", "##.", ".#.", "###"], "the prototype voxel \"i\"");
+  assert.deepEqual(voxels.filter((v) => v.hollow), [], "the Icon has no Hollow Voxel: the tittle is solid");
+  assert.equal(voxels.length, 7, "total Voxel count");
   assert.equal(Math.max(...voxels.map((v) => v.row)) + 1, 5, "grid rows");
   assert.equal(Math.max(...voxels.map((v) => v.col)) + 1, 3, "grid columns");
 });
 
-test("colour versions colour the Voxels by column with the ramp; one-colour versions use Ink or white", () => {
-  const byColumn = (version) => {
-    const columns = new Map();
-    for (const v of readVoxels(readSvg(version)).sort((a, b) => a.col - b.col)) {
-      if (!columns.has(v.col)) columns.set(v.col, new Set());
-      columns.get(v.col).add(v.colour);
+test("colour versions colour the Voxels by row with the ramp, top to bottom; one-colour versions use Ink or white", () => {
+  const byRow = (version) => {
+    const rows = new Map();
+    for (const v of readVoxels(readSvg(version)).sort((a, b) => a.row - b.row)) {
+      if (!rows.has(v.row)) rows.set(v.row, new Set());
+      rows.get(v.row).add(v.colour);
     }
-    return [...columns.values()].map((set) => [...set]);
+    return [...rows].map(([row, set]) => [row, [...set]]);
   };
 
   for (const version of ["color-on-light", "color-on-ink"]) {
-    assert.deepEqual(byColumn(version), ICON_RAMP.map((c) => [c]), `${version}: one ramp colour per column, left to right`);
+    assert.deepEqual(byRow(version), ICON_ROW_COLOURS.map(([row, c]) => [row, [c]]), `${version}: one ramp colour per row, top to bottom`);
   }
   for (const version of ["mono-ink", "mono-white"]) {
     const colour = version === "mono-ink" ? INK : "#ffffff";
@@ -131,7 +130,7 @@ test("the favicon layers show the Icon on Ink, most clearly checked at 16px", ()
     const { width, height, data } = entry.png;
     assert.equal(opaqueColours(entry.png).has(INK), true, `${width}px: no Ink background`);
     if (width >= 48) {
-      for (const c of ICON_RAMP) assert.ok(opaqueColours(entry.png).has(c), `${width}px: no solid ${c} pixels`);
+      for (const c of ICON_COLOURS) assert.ok(opaqueColours(entry.png).has(c), `${width}px: no solid ${c} pixels`);
     }
     assert.equal(width * height, data.length / 4, `${width}px: unexpected buffer shape`);
   }
@@ -158,13 +157,35 @@ test("the favicon layers show the Icon on Ink, most clearly checked at 16px", ()
   assert.ok(centre >= 4, `16px layer: the stem doesn't read as a stroke (longest run ${centre}px)`);
 });
 
+// The prototype favicon: a rounded Ink tile with the "i" running its full
+// height. Corners are transparent so the tab shows a rounded square.
+test("the favicon layers are rounded tiles the Icon fills top to bottom", () => {
+  for (const { png } of readIco(readFileSync(buildPath("favicon/favicon.ico")))) {
+    const alpha = (x, y) => png.data[(y * png.width + x) * 4 + 3];
+    const last = png.width - 1;
+    for (const [x, y] of [[0, 0], [last, 0], [0, last], [last, last]]) {
+      // Anti-aliasing leaves a trace of the curve in the corner pixel at 16px.
+      assert.ok(alpha(x, y) < 64, `${png.width}px: corner (${x}, ${y}) is not transparent (alpha ${alpha(x, y)})`);
+    }
+    assert.equal(alpha(png.width >> 1, png.height >> 1), 255, `${png.width}px: tile centre is not opaque`);
+
+    const mark = isMark(png);
+    const markRows = [];
+    for (let y = 0; y < png.height; y++) {
+      for (let x = 0; x < png.width; x++) if (mark(x, y)) { markRows.push(y); break; }
+    }
+    const span = (Math.max(...markRows) - Math.min(...markRows) + 1) / png.height;
+    assert.ok(span >= 0.85, `${png.width}px: the mark spans only ${(span * 100).toFixed(0)}% of the tile height`);
+  }
+});
+
 test("the Apple touch icon is a flat 180px square: no transparency, Ink ground, ramp Voxels", () => {
   const png = readPng("favicon/apple-touch-icon.png");
   assert.equal(png.width, 180);
   assert.equal(png.height, 180);
   for (let i = 3; i < png.data.length; i += 4) assert.equal(png.data[i], 255, `transparent pixel at byte ${i}`);
   assert.equal(opaqueColours(png).has(INK), true, "no Ink background");
-  for (const c of ICON_RAMP) assert.ok(opaqueColours(png).has(c), `no solid ${c} pixels`);
+  for (const c of ICON_COLOURS) assert.ok(opaqueColours(png).has(c), `no solid ${c} pixels`);
 });
 
 test("the avatar is a flat 512px square: no transparency, Ink ground, ramp Voxels", () => {
@@ -173,5 +194,5 @@ test("the avatar is a flat 512px square: no transparency, Ink ground, ramp Voxel
   assert.equal(png.height, 512);
   for (let i = 3; i < png.data.length; i += 4) assert.equal(png.data[i], 255, `transparent pixel at byte ${i}`);
   assert.equal(opaqueColours(png).has(INK), true, "no Ink background");
-  for (const c of ICON_RAMP) assert.ok(opaqueColours(png).has(c), `no solid ${c} pixels`);
+  for (const c of ICON_COLOURS) assert.ok(opaqueColours(png).has(c), `no solid ${c} pixels`);
 });

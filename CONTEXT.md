@@ -15,7 +15,7 @@ One square cell of the logo grid. Filled Voxels take their colour from the Trans
 _Avoid_: pixel, block, square
 
 **Hollow Voxel**:
-A voxel drawn as an outline only, meaning a sample skipped by sparse sampling. Part of the Logo at every size.
+A voxel drawn as an outline only, meaning a sample skipped by sparse sampling. Part of the Wordmark and the Lockups at every size. The Icon has none: at favicon sizes its tittle must be solid.
 _Avoid_: empty cell, gap, outline
 
 **Wordmark**:
@@ -35,7 +35,7 @@ The Wordmark with the Tagline set beneath it, for square spaces.
 _Avoid_: vertical logo, square logo
 
 **Icon**:
-A single voxel "i", for favicons, avatars, and slide corners.
+A single voxel "i", for favicons, avatars, and slide corners. Its Transfer-Function Ramp runs top to bottom, not left to right.
 _Avoid_: favicon (that is one use of the Icon), monogram, symbol
 
 **Volume Grid**:
@@ -45,7 +45,7 @@ _Avoid_: background dots, texture
 ### Colour and type
 
 **Transfer-Function Ramp**:
-The seven-step colour sequence (navy through blue, sky, teal and lime to amber) that colours the Voxels from left to right.
+The seven-step colour sequence (navy through blue, sky, teal and lime to amber) that colours the Wordmark's Voxels from left to right (the Icon's from top to bottom).
 _Avoid_: gradient, rainbow, colormap (in brand docs)
 
 **Ink**:

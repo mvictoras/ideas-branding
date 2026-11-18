@@ -46,22 +46,25 @@ function colourScheme(version, { colours }) {
 
 const n = (v) => +v.toFixed(3);
 
-function voxelRect({ col, row, hollow, colour }, x0, y0) {
+const LOGO_VOXEL = { inset: INSET, radius: RADIUS };
+
+function voxelRect({ col, row, hollow, colour }, x0, y0, { inset, radius } = LOGO_VOXEL) {
   const x = x0 + col * CELL;
   const y = y0 + row * CELL;
+  const rx = radius || undefined; // square corners: no rx attribute
   if (hollow) {
     // Stroke centred on the path: keep the outer edge flush with a filled Voxel.
-    const i = INSET + STROKE / 2;
+    const i = inset + STROKE / 2;
     const s = n(CELL - 2 * i);
-    return { type: "rect", x: n(x + i), y: n(y + i), width: s, height: s, rx: RADIUS, fill: "none", stroke: colour, strokeWidth: STROKE };
+    return { type: "rect", x: n(x + i), y: n(y + i), width: s, height: s, rx, fill: "none", stroke: colour, strokeWidth: STROKE };
   }
-  const s = CELL - 2 * INSET;
-  return { type: "rect", x: x + INSET, y: y + INSET, width: s, height: s, rx: RADIUS, fill: colour };
+  const s = CELL - 2 * inset;
+  return { type: "rect", x: x + inset, y: y + inset, width: s, height: s, rx, fill: colour };
 }
 
-/** The Wordmark's Voxels with the top-left cell at (x0, y0). */
-function wordmarkNodes(layout, voxelColour, x0, y0) {
-  return layout.voxels.map((v) => voxelRect({ ...v, colour: voxelColour === "ramp" ? v.colour : voxelColour }, x0, y0));
+/** A layout's Voxels with the top-left cell at (x0, y0). */
+function voxelNodes(layout, voxelColour, x0, y0, voxelStyle) {
+  return layout.voxels.map((v) => voxelRect({ ...v, colour: voxelColour === "ramp" ? v.colour : voxelColour }, x0, y0, voxelStyle));
 }
 
 function volumeGrid(layout, foreground, x0, y0) {
@@ -91,7 +94,7 @@ export function wordmarkScene(layout, { title, voxelColour = "ramp" }) {
     width: (layout.columns + 2 * PAD) * CELL,
     height: (layout.rows + 2 * PAD) * CELL,
     title,
-    children: wordmarkNodes(layout, voxelColour, PAD * CELL, PAD * CELL),
+    children: voxelNodes(layout, voxelColour, PAD * CELL, PAD * CELL),
   };
 }
 
@@ -115,7 +118,7 @@ export function composeLogo(brand, piece, version) {
         width: markWidth + 2 * margin,
         height: markHeight + 2 * margin,
         title: name,
-        children: [volumeGrid(layout, foreground, margin, margin), ...wordmarkNodes(layout, voxels, margin, margin)],
+        children: [volumeGrid(layout, foreground, margin, margin), ...voxelNodes(layout, voxels, margin, margin)],
       };
     }
 
@@ -128,7 +131,7 @@ export function composeLogo(brand, piece, version) {
         width: n(x0 + tagline.width + edge),
         height: markHeight + 2 * edge,
         title: fullName,
-        children: [...wordmarkNodes(layout, voxels, edge, edge), taglineGroup(tagline, foreground, x0, y0)],
+        children: [...voxelNodes(layout, voxels, edge, edge), taglineGroup(tagline, foreground, x0, y0)],
       };
     }
 
@@ -141,7 +144,7 @@ export function composeLogo(brand, piece, version) {
         width: markWidth + 2 * edge,
         height: n(y0 + tagline.lastBaseline + tagline.descent + edge),
         title: fullName,
-        children: [...wordmarkNodes(layout, voxels, edge, edge), taglineGroup(tagline, foreground, edge, y0)],
+        children: [...voxelNodes(layout, voxels, edge, edge), taglineGroup(tagline, foreground, edge, y0)],
       };
     }
 
@@ -153,23 +156,30 @@ export function composeLogo(brand, piece, version) {
   }
 }
 
-// The favicon tile: the Icon centred on a solid square. Favicons, the Apple
-// touch icon and avatars have to survive any background — and iOS flattens
-// transparency to black — so the tile is filled with Ink, the brand's dark
-// ground, and the Voxels take the full ramp.
-const TILE_PAD = 0.5; // empty cells of Ink around the Icon
+// The favicon tile, after the www-ideas prototype favicon: the Icon running
+// the tile's full height, centred across it, on solid Ink. Favicons, the Apple
+// touch icon and avatars have to survive any background, so the tile is
+// filled with Ink, the brand's dark ground, and the Voxels take the full ramp.
+// `rounded` gives the tab favicon the prototype's rounded corners; the Apple
+// touch icon and avatars stay square, because iOS flattens transparency to
+// black and the platforms crop them to their own shapes. The tile Voxels are
+// the prototype's chunky squares rather than the Wordmark's rounded ones: at 16 to
+// 48 px the extra fill is what makes the mark pop.
+const TILE_RADIUS = 1 / 6; // × tile side
+// The prototype's chunky tile Voxels: square corners, 90% of the cell.
+const TILE_VOXEL = { inset: CELL * 0.05, radius: 0 };
 
 /** The Icon on its solid square tile, for the favicon set. */
-export function iconTileScene(brand) {
+export function iconTileScene(brand, { rounded = false } = {}) {
   const layout = layOutIcon(brand);
-  const side = Math.max(layout.columns, layout.rows) + 2 * TILE_PAD;
+  const side = Math.max(layout.columns, layout.rows) * CELL;
   return {
-    width: side * CELL,
-    height: side * CELL,
+    width: side,
+    height: side,
     title: brand.wordmark.text,
     children: [
-      { type: "rect", x: 0, y: 0, width: side * CELL, height: side * CELL, fill: brand.colours.ink },
-      ...wordmarkNodes(layout, "ramp", ((side - layout.columns) / 2) * CELL, ((side - layout.rows) / 2) * CELL),
+      { type: "rect", x: 0, y: 0, width: side, height: side, rx: rounded ? n(side * TILE_RADIUS) : undefined, fill: brand.colours.ink },
+      ...voxelNodes(layout, "ramp", (side - layout.columns * CELL) / 2, (side - layout.rows * CELL) / 2, TILE_VOXEL),
     ],
   };
 }
