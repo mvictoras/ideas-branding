@@ -109,6 +109,24 @@ The SVGs carry their physical size in inches; the PNGs are rendered at 192 dpi.
 
 The large strip meets every institution's minimum size. The small strip can't: holding UNL at 0.5 in tall and Cincinnati at 0.75 in (80 px) wide would leave too little width for the rest. Those two are listed in `strip.sizes.small.pendingWaivers` while waivers are requested (#7), so they are not enlarged there. If a waiver is refused, remove that partner from the list: the layout then holds it at its minimum and shrinks the others. The test fails if any logo not on the list is below its minimum.
 
+### Slide Template
+
+`build/slide-template/ideas-slide-template.potx` is the 16:9 PowerPoint template for every IDEAS presentation. Open it, or put it in PowerPoint's templates folder, and each new presentation starts with the IDEAS theme and layouts. It holds no slides of its own.
+
+| Layout | What it has |
+|---|---|
+| Navy Title | Ink background, the Wordmark (colour on Ink), title, speaker, venue and date placeholders, and the large Partner Strip on a white band across the bottom |
+| Title + Content | The title and text on the Background, and the content-slide footer: the Icon at left, the slide number in the centre and the small Partner Strip at right |
+
+The theme takes everything from the same sources as the rest of the build:
+
+- **Fonts** (ADR 0001): Helvetica for headings and body. The theme gives Arial's PANOSE, so Windows PowerPoint and Google Slides show Arial, which has the same character widths. A PowerPoint theme has only a heading and a body font, so the code font, Consolas (falling back to Courier New), is recorded in the theme as an extension that apps ignore. PowerPoint won't offer it in the font menu. Set code in Consolas by hand until a layout with a code placeholder adds it.
+- **Colours**: theme accents 1 to 6 are the Theme Accents in chart order, so charts pick them up automatically. Dark 1 and 2 are Ink, Light 1 is white and Light 2 is the Background.
+- **Logo and Partner Strip**: the Wordmark and the Icon are the built Logo files. Each partner logo is placed as its official file, cropped to its ink and scaled uniformly, at the positions of the built large and small strips, so the template follows `src/partners.json` (including the white band's padding). Pictures carry a PNG for every app, plus the SVG where there is one, which PowerPoint draws as a vector.
+- **Slide number**: a text box on the layout holding PowerPoint's slide-number field, so every content slide shows its number without turning on Insert › Slide Number. Header & Footer can't switch it off.
+
+`test/slide-template.test.js` opens the `.potx` with a PPTX reader and checks all of the above. It also checks that every positioned shape has geometry: Keynote drops the text of a shape without it. Later template work extends these tests.
+
 ## Test
 
 ```sh
@@ -154,6 +172,7 @@ src/brand.json                 single source of truth
 src/pantone-solid-coated.json  candidate Pantone inks for the print table
 src/fonts/                     the Tagline font (JetBrains Mono, OFL) used for outlining
 scripts/                       the build (scripts/build.js is the entry point) and the grid preview
+scripts/lib/slides.js          the Slide Template, written as Office Open XML
 test/                          checks over build/
 src/partners.json              the Partner Strip: partners in order, files, usage rules, sizes
 assets/partners/raw/           official partner logos and their sources (SOURCES.md)

@@ -1,6 +1,8 @@
 // The one build command: `npm run build`. Recreates build/ from src/brand.json,
 // src/partners.json and the official partner logos in assets/partners/raw/.
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+// Later steps reuse earlier output: the Slide Template places the Logo and the
+// Partner Strip.
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadBrand } from "./lib/brand.js";
@@ -10,6 +12,7 @@ import { sceneToPdf } from "./lib/pdf.js";
 import { svgToPng } from "./lib/png.js";
 import { icoFromPngs } from "./lib/ico.js";
 import { cleanedLogo, layOutStrip, loadStripConfig, prepareInstitutions, stripOnLight, stripOnWhiteBand } from "./lib/partners.js";
+import { slideTemplate } from "./lib/slides.js";
 import { colourTokensCss, colourTokensJson, loadPantoneInks, printTable, printTableCsv, printTableMarkdown } from "./lib/colours.js";
 
 const PNG_WIDTHS = [400, 800, 1200, 2400];
@@ -66,8 +69,19 @@ const writeSvgAndPng = (name, { svg, widthIn }) => {
   write(`${name}.png`, svgToPng(svg, Math.round(widthIn * PARTNER_PNG_DPI)));
 };
 for (const institution of institutions) writeSvgAndPng(`partner-strip/logos/${institution.id}`, cleanedLogo(institution));
+const strips = {};
 for (const [size, sizeSpec] of Object.entries(stripConfig.strip.sizes)) {
-  const layout = layOutStrip(institutions, stripConfig.strip, sizeSpec);
+  const layout = (strips[size] = layOutStrip(institutions, stripConfig.strip, sizeSpec));
   writeSvgAndPng(`partner-strip/ideas-partner-strip-${size}-on-light`, stripOnLight(layout));
   writeSvgAndPng(`partner-strip/ideas-partner-strip-${size}-white-band`, stripOnWhiteBand(layout, stripConfig.strip.whiteBand));
 }
+
+console.log("Building build/slide-template/");
+const logoFiles = (piece, version) => {
+  const name = `logo/${piece}/ideas-${piece}-${version}`;
+  return { svg: readFileSync(`${OUT}${name}.svg`), png: readFileSync(`${OUT}${name}-${PNG_WIDTHS.at(-1)}.png`) };
+};
+write(
+  "slide-template/ideas-slide-template.potx",
+  slideTemplate({ brand, wordmark: logoFiles("wordmark", "color-on-ink"), icon: logoFiles("icon", "color-on-light"), strips, whiteBand: stripConfig.strip.whiteBand }),
+);
