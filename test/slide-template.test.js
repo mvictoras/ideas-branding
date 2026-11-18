@@ -155,11 +155,50 @@ function assertIsStrip(logos, size) {
 
 const insideSlide = (box) => box.x >= -0.001 && box.y >= -0.001 && right(box) <= SLIDE.width + 0.001 && bottom(box) <= SLIDE.height + 0.001;
 
-test("Navy Title: Ink background, the Horizontal Lockup, and title, speaker, venue and date placeholders", () => {
-  const { pkg, layout, shapes: all } = layoutShapes("Navy Title");
-  assert.equal(solidFillColour(pkg, backgroundFill(pkg, layout.part)), tokens().ink, "Ink background");
+// The Slide Template's named layouts, in the order PowerPoint lists them.
+const LAYOUTS = ["Navy Title", "Agenda", "Section Divider", "Title + Content", "Two Column", "Comparison", "Title Only", "Full-Bleed Image", "Big Statement / Quote", "Closing", "Blank"];
+// Navy layouts: Ink background and the large Partner Strip on a white band.
+const NAVY = ["Navy Title", "Section Divider", "Closing"];
+// Light layouts: the Background and the content-slide footer.
+const LIGHT = LAYOUTS.filter((name) => !NAVY.includes(name));
+// The DOE funding acknowledgment (ALCF resources and the ASCR Argonne Base project), as given by the IDEAS lead.
+// Pinned here on purpose, as well as in src/brand.json: a wording change is a reviewed change to both.
+const ACKNOWLEDGMENT =
+  "This research used resources of the Argonne Leadership Computing Facility, which is a U.S. Department of Energy Office of Science User Facility operated under contract DE-AC02-06CH11357. This work was supported by the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research (ASCR), for the project Argonne Base: Scientific Data Management and Visualization to Advance AI for Science, under Contract DE-AC02-06CH11357.";
 
-  const lockups = all.filter((s) => s.kind === "pic" && sameImage(s, logoImage("horizontal-lockup", "color-on-ink")));
+const placeholdersOf = (shapeList) => shapeList.filter((s) => s.placeholder);
+const kindOf = (s) => `${s.placeholder.type}/${s.placeholder.idx}`;
+const assertDistinct = (placeholders) => assert.equal(new Set(placeholders.map(kindOf)).size, placeholders.length, "placeholders are distinct");
+const lockupsOn = (shapeList) => shapeList.filter((s) => s.kind === "pic" && sameImage(s, logoImage("horizontal-lockup", "color-on-ink")));
+const textOf = (el) => descendants(el, NS.a, "t").map((t) => t.textContent).join("");
+/** A layout placeholder's box, or the master placeholder's it inherits (matched by idx). */
+const boxOf = (pkg, s) => s.box ?? shapes(pkg, pkg.master).find((m) => m.placeholder?.idx === s.placeholder.idx)?.box;
+
+test("the Slide Template has its 11 named layouts, in order", () => {
+  assert.deepEqual(open().layouts.map((l) => l.name), LAYOUTS);
+});
+
+test("each layout declares PowerPoint's layout type, so changing a deck's template maps its slides onto the right layout", () => {
+  const pkg = open();
+  const types = Object.fromEntries(pkg.layouts.map((l) => [l.name, pkg.xml(l.part).documentElement.getAttribute("type")]));
+  assert.deepEqual(types, {
+    "Navy Title": "title",
+    Agenda: "cust",
+    "Section Divider": "secHead",
+    "Title + Content": "obj",
+    "Two Column": "twoObj",
+    Comparison: "twoTxTwoObj",
+    "Title Only": "titleOnly",
+    "Full-Bleed Image": "picTx",
+    "Big Statement / Quote": "cust",
+    Closing: "cust",
+    Blank: "blank",
+  });
+});
+
+test("Navy Title: the Horizontal Lockup, and title, speaker, venue and date placeholders", () => {
+  const { shapes: all } = layoutShapes("Navy Title");
+  const lockups = lockupsOn(all);
   assert.equal(lockups.length, 1, "one colour-on-ink Horizontal Lockup");
   const mark = lockups[0].box;
   assert.ok(insideSlide(mark) && bottom(mark) < SLIDE.height / 2, "Horizontal Lockup in the top half");
@@ -167,47 +206,48 @@ test("Navy Title: Ink background, the Horizontal Lockup, and title, speaker, ven
   const [, , w, h] = svg.match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number);
   assert.ok(Math.abs(mark.width / mark.height / (w / h) - 1) < 0.005, "Horizontal Lockup not stretched");
 
-  const placeholders = all.filter((s) => s.placeholder);
+  const placeholders = placeholdersOf(all);
   const byName = (name) => placeholders.find((s) => s.name === name);
   assert.equal(byName("Title")?.placeholder.type, "ctrTitle", "title placeholder");
   assert.equal(byName("Speaker")?.placeholder.type, "subTitle", "speaker placeholder");
   // Text only: a content placeholder would offer to insert tables and charts.
   for (const name of ["Venue", "Date"]) assert.equal(byName(name)?.placeholder.type, "body", `${name} text placeholder`);
-  assert.equal(new Set(placeholders.map((s) => `${s.placeholder.type}/${s.placeholder.idx}`)).size, placeholders.length, "placeholders are distinct");
-  for (const s of placeholders) {
-    assert.ok(insideSlide(s.box), `${s.name} on the slide`);
-    assert.ok(!overlaps(s.box, mark), `${s.name} clear of the Horizontal Lockup`);
-  }
+  for (const s of placeholders) assert.ok(!overlaps(s.box, mark), `${s.name} clear of the Horizontal Lockup`);
 });
 
-test("Navy Title: the full-colour large Partner Strip, in the configured order, on a white band at the bottom", () => {
-  const { pkg, shapes: all } = layoutShapes("Navy Title");
-  const bands = all.filter((s) => s.kind === "sp" && !s.placeholder && solidFillColour(pkg, child(child(s.el, NS.p, "spPr"), NS.a, "solidFill")) === WHITE);
-  assert.equal(bands.length, 1, "one white band");
-  const band = bands[0].box;
-  assert.ok(near(band.x, 0) && near(band.width, SLIDE.width) && near(bottom(band), SLIDE.height), "band spans the bottom of the slide");
+for (const name of NAVY) {
+  test(`${name}: Ink background and the full-colour large Partner Strip, in the configured order, on a white band at the bottom`, () => {
+    const { pkg, layout, shapes: all } = layoutShapes(name);
+    assert.equal(solidFillColour(pkg, backgroundFill(pkg, layout.part)), tokens().ink, "Ink background");
 
-  const logos = partnerLogos(all);
-  const strip = assertIsStrip(logos, "large");
-  assert.ok(strip.y >= band.y - 0.001 && bottom(strip) <= bottom(band) + 0.001, "strip, with its clear space, on the band");
-  assert.ok(near(strip.x + strip.width / 2, SLIDE.width / 2, 0.01), "strip centred");
-  // The band is drawn first, so the logos sit on top of it.
-  const z = (box) => all.findIndex((s) => s.box === box);
-  assert.ok(logos.every((l) => z(l.box) > z(band)), "logos above the band");
-  for (const s of all.filter((x) => x.placeholder)) assert.ok(bottom(s.box) <= band.y, `${s.name} above the band`);
-});
+    const bands = all.filter((s) => s.kind === "sp" && !s.placeholder && solidFillColour(pkg, child(child(s.el, NS.p, "spPr"), NS.a, "solidFill")) === WHITE);
+    assert.equal(bands.length, 1, "one white band");
+    const band = bands[0].box;
+    assert.ok(near(band.x, 0) && near(band.width, SLIDE.width) && near(bottom(band), SLIDE.height), "band spans the bottom of the slide");
 
-test("Title + Content: the master's title and text on the Background", () => {
-  const { pkg, layout, shapes: all } = layoutShapes("Title + Content");
-  const fill = backgroundFill(pkg, layout.part) ?? backgroundFill(pkg, pkg.master);
-  assert.equal(solidFillColour(pkg, fill), tokens().background, "Background");
-  assert.ok(all.some((s) => s.placeholder?.type === "title"), "title placeholder");
-  // A content placeholder: text, or a table, chart or picture.
-  assert.ok(all.some((s) => s.placeholder?.type === "obj" && s.placeholder.idx === "1"), "content placeholder");
-});
+    const logos = partnerLogos(all);
+    const strip = assertIsStrip(logos, "large");
+    assert.ok(strip.y >= band.y - 0.001 && bottom(strip) <= bottom(band) + 0.001, "strip, with its clear space, on the band");
+    assert.ok(near(strip.x + strip.width / 2, SLIDE.width / 2, 0.01), "strip centred");
+    // The band is drawn first, so the logos sit on top of it.
+    const z = (box) => all.findIndex((s) => s.box === box);
+    assert.ok(logos.every((l) => z(l.box) > z(band)), "logos above the band");
 
-test("Title + Content footer: the Icon at left, the slide-number field in the centre, the small Partner Strip at right", () => {
-  const { pkg, shapes: all } = layoutShapes("Title + Content");
+    const placeholders = placeholdersOf(all);
+    assert.ok(placeholders.length > 0, "has placeholders");
+    assertDistinct(placeholders);
+    for (const s of placeholders) {
+      assert.ok(insideSlide(s.box), `${s.name} on the slide`);
+      assert.ok(bottom(s.box) <= band.y, `${s.name} above the band`);
+    }
+  });
+}
+
+/**
+ * The content-slide footer of a layout: the Icon at left, the slide-number
+ * field in the centre, the small Partner Strip at right. Returns its top.
+ */
+function assertContentFooter(pkg, all) {
   const icons = all.filter((s) => s.kind === "pic" && sameImage(s, logoImage("icon", "color-on-light")));
   assert.equal(icons.length, 1, "one colour-on-light Icon");
   const icon = icons[0].box;
@@ -220,26 +260,122 @@ test("Title + Content footer: the Icon at left, the slide-number field in the ce
   assert.ok(near(number.box.x + number.box.width / 2, SLIDE.width / 2, 0.01), "slide number centred");
   assert.equal(child(descendants(number.el, NS.a, "p")[0], NS.a, "pPr")?.getAttribute("algn"), "ctr", "slide number text centred");
 
-  const logos = partnerLogos(all);
-  const strip = assertIsStrip(logos, "small");
+  const strip = assertIsStrip(partnerLogos(all), "small");
 
   assert.ok(right(icon) < SLIDE.width / 3, "Icon at left");
   assert.ok(strip.x > SLIDE.width / 3 && right(strip) <= SLIDE.width, "strip at right");
   assert.ok(right(number.box) < strip.x && number.box.x > right(icon), "slide number between Icon and strip");
   const middle = centreY(strip);
   for (const [what, box] of [["Icon", icon], ["slide number", number.box]]) assert.ok(near(centreY(box), middle, 0.02), `${what} on the footer's centre line`);
+  for (const [what, box] of [["Icon", icon], ["slide number", number.box], ["strip", strip]]) assert.ok(insideSlide(box), `${what} on the slide`);
+  return Math.min(icon.y, number.box.y, strip.y);
+}
 
-  // The footer sits below the master's text area and on the slide.
-  const body = shapes(pkg, pkg.master).find((s) => s.placeholder?.type === "body");
-  for (const [what, box] of [["Icon", icon], ["slide number", number.box], ["strip", strip]]) {
-    assert.ok(box.y >= bottom(body.box), `${what} below the text`);
-    assert.ok(insideSlide(box), `${what} on the slide`);
-  }
+for (const name of LIGHT) {
+  test(`${name}: the Background and the content-slide footer (Icon at left, slide number in the centre, small Partner Strip at right)`, () => {
+    const { pkg, layout, shapes: all } = layoutShapes(name);
+    const fill = backgroundFill(pkg, layout.part) ?? backgroundFill(pkg, pkg.master);
+    assert.equal(solidFillColour(pkg, fill), tokens().background, "Background");
+    const footerTop = assertContentFooter(pkg, all);
+
+    const placeholders = placeholdersOf(all);
+    assertDistinct(placeholders);
+    for (const s of placeholders) {
+      const box = boxOf(pkg, s);
+      assert.ok(box, `${s.name} has a position`);
+      assert.ok(insideSlide(box), `${s.name} on the slide`);
+      assert.ok(bottom(box) <= footerTop, `${s.name} above the footer`);
+    }
+    for (const [i, a] of placeholders.entries()) {
+      for (const b of placeholders.slice(i + 1)) assert.ok(!overlaps(boxOf(pkg, a), boxOf(pkg, b)), `${a.name} clear of ${b.name}`);
+    }
+  });
+}
+
+/** The placeholders of a layout, as "type/idx" strings in z-order. */
+const placeholderKinds = (name) => placeholdersOf(layoutShapes(name).shapes).map(kindOf);
+
+test("Title + Content: the master's title and a content placeholder", () => {
+  // A content placeholder: text, or a table, chart or picture.
+  assert.deepEqual(placeholderKinds("Title + Content"), ["title/0", "obj/1"]);
 });
 
-test("README documents the Slide Template", () => {
+test("Agenda: a title and a numbered text list", () => {
+  assert.deepEqual(placeholderKinds("Agenda"), ["title/0", "body/1"]);
+  const { shapes: all } = layoutShapes("Agenda");
+  const list = all.find((s) => s.placeholder?.type === "body");
+  assert.ok(descendants(list.el, NS.a, "buAutoNum").length > 0, "agenda items are numbered");
+});
+
+test("Section Divider: a section title and a subtitle", () => {
+  const { shapes: all } = layoutShapes("Section Divider");
+  assert.deepEqual(placeholdersOf(all).map((s) => s.placeholder.type), ["title", "body"]);
+});
+
+test("Two Column: a title and two side-by-side content placeholders of equal size", () => {
+  assert.deepEqual(placeholderKinds("Two Column"), ["title/0", "obj/1", "obj/2"]);
+  const { shapes: all } = layoutShapes("Two Column");
+  const [a, b] = all.filter((s) => s.placeholder?.type === "obj").map((s) => s.box);
+  assert.ok(right(a) < b.x, "left column then right column");
+  assert.ok(near(a.width, b.width) && near(a.height, b.height) && near(a.y, b.y), "columns match");
+});
+
+test("Comparison: a title and two headed columns", () => {
+  assert.deepEqual(placeholderKinds("Comparison"), ["title/0", "body/1", "obj/2", "body/3", "obj/4"]);
+  const { shapes: all } = layoutShapes("Comparison");
+  const box = (idx) => all.find((s) => s.placeholder?.idx === idx).box;
+  for (const [heading, content] of [["1", "2"], ["3", "4"]]) {
+    assert.ok(bottom(box(heading)) <= box(content).y && near(box(heading).x, box(content).x), `heading ${heading} above its column`);
+  }
+  assert.ok(right(box("2")) < box("4").x, "columns side by side");
+});
+
+test("Title Only: just the title", () => {
+  assert.deepEqual(placeholderKinds("Title Only"), ["title/0"]);
+});
+
+test("Full-Bleed Image: a picture placeholder running edge to edge from the top, and a caption", () => {
+  assert.deepEqual(placeholderKinds("Full-Bleed Image"), ["pic/1", "body/13"]);
+  const { shapes: all } = layoutShapes("Full-Bleed Image");
+  const [image, caption] = placeholdersOf(all).map((s) => s.box);
+  assert.ok(near(image.x, 0) && near(image.y, 0) && near(image.width, SLIDE.width), "image bleeds off the top and sides");
+  assert.ok(caption.y >= bottom(image), "caption below the image");
+});
+
+test("Big Statement / Quote: one large statement and its attribution", () => {
+  assert.deepEqual(placeholderKinds("Big Statement / Quote"), ["body/1", "body/13"]);
+  const { shapes: all } = layoutShapes("Big Statement / Quote");
+  const [statement, attribution] = placeholdersOf(all);
+  const size = (s) => Number(descendants(s.el, NS.a, "defRPr")[0]?.getAttribute("sz")) / 100;
+  assert.ok(size(statement) >= 36, "statement set large");
+  assert.ok(size(attribution) < size(statement), "attribution smaller than the statement");
+  assert.ok(bottom(statement.box) <= attribution.box.y, "attribution below the statement");
+});
+
+test("Blank: nothing but the footer", () => {
+  assert.deepEqual(placeholderKinds("Blank"), []);
+});
+
+test("Closing: the Horizontal Lockup, a title, and the DOE ASCR funding acknowledgment above the white band", () => {
+  const { pkg, shapes: all } = layoutShapes("Closing");
+  assert.equal(lockupsOn(all).length, 1, "one colour-on-ink Horizontal Lockup");
+  assert.ok(placeholdersOf(all).some((s) => s.placeholder.type === "title"), "title placeholder");
+
+  // Fixed text on the layout, not a placeholder someone could delete or retype.
+  const acks = all.filter((s) => !s.placeholder && textOf(s.el).includes("DE-AC02-06CH11357"));
+  assert.equal(acks.length, 1, "one acknowledgment");
+  const ack = acks[0];
+  assert.equal(textOf(ack.el), ACKNOWLEDGMENT, "the agreed wording");
+  assert.ok(child(child(ack.el, NS.p, "spPr"), NS.a, "prstGeom"), "acknowledgment has geometry");
+  const band = all.find((s) => s.name === "White band").box;
+  assert.ok(insideSlide(ack.box) && bottom(ack.box) <= band.y, "acknowledgment above the band");
+  const colours = descendants(ack.el, NS.a, "rPr").map((r) => solidFillColour(pkg, child(r, NS.a, "solidFill")));
+  assert.ok(colours.length && colours.every((c) => c === WHITE), "acknowledgment set in white on Ink");
+  for (const s of placeholdersOf(all)) assert.ok(!overlaps(s.box, ack.box), `${s.name} clear of the acknowledgment`);
+});
+
+test("README documents the Slide Template and every layout", () => {
   const readme = readFileSync(`${ROOT}README.md`, "utf8");
   assert.match(readme, /build\/slide-template\/ideas-slide-template\.potx/);
-  assert.match(readme, /Navy Title/);
-  assert.match(readme, /Title \+ Content/);
+  for (const name of LAYOUTS) assert.ok(readme.includes(`| ${name} |`), `README layout table lists ${name}`);
 });

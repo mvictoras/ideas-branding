@@ -23,6 +23,10 @@
     "grid": [".#.", "...", "##.", ".#.", "###"],
     "rampSteps": [1, 2, 3, 4, 5]
   },
+  "fundingAcknowledgment": {
+    "$comment": "The DOE funding acknowledgment (ALCF resources and the ASCR Argonne Base project) on the Slide Template's Closing layout, as given by the IDEAS lead (#9). The www-ideas site footer still carries an older, shorter ASCR sentence.",
+    "text": "This research used resources of the Argonne Leadership Computing Facility, which is a U.S. Department of Energy Office of Science User Facility operated under contract DE-AC02-06CH11357. This work was supported by the U.S. Department of Energy, Office of Science, Office of Advanced Scientific Computing Research (ASCR), for the project Argonne Base: Scientific Data Management and Visualization to Advance AI for Science, under Contract DE-AC02-06CH11357."
+  },
   "tagline": {
     "$comment": "Always lowercase inside the Logo. Each entry is one line of the three-line Tagline, as the www-ideas prototype header wraps it; outlined from the font file at build time, so no output depends on an installed font.",
     "lines": ["intelligent data", "exploration", "assistant for science"],
