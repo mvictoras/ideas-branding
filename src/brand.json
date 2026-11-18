@@ -16,6 +16,10 @@
       "S": [".##o", "#...", ".##.", "...#", "###."]
     }
   },
+  "icon": {
+    "$comment": "The Icon: a single voxel \"i\", for favicons, avatars and slide corners. Same cell grammar as the Wordmark letters; the tittle is the hand-placed Hollow Voxel, the base bar keeps the mark sturdy at 16px.",
+    "grid": [".o.", "...", ".#.", ".#.", "###"]
+  },
   "tagline": {
     "$comment": "Always lowercase inside the Logo. Each entry is one line of the three-line Tagline, as the www-ideas prototype header wraps it; outlined from the font file at build time, so no output depends on an installed font.",
     "lines": ["intelligent data", "exploration", "assistant for science"],

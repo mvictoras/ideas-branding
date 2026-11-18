@@ -26,6 +26,7 @@ Outputs, under `build/logo/<piece>/`:
 | `wordmark-hero` | The Wordmark on the Volume Grid, for large hero uses only |
 | `horizontal-lockup` | The Wordmark with the three-line Tagline beside it, as in the website header |
 | `stacked-lockup` | The Wordmark with the Tagline beneath it, for square spaces |
+| `icon` | The voxel "i" alone, for favicons, avatars and slide corners |
 
 Each piece comes in four colour versions. All have transparent backgrounds:
 
@@ -37,6 +38,18 @@ Each piece comes in four colour versions. All have transparent backgrounds:
 | `mono-white` | white | white | dark photos and coloured backgrounds |
 
 Every piece and colour version is written as `ideas-<piece>-<version>.svg`, `.pdf` (vector) and `-<width>.png` at 400, 800, 1200 and 2400 px wide. For example, `build/logo/horizontal-lockup/ideas-horizontal-lockup-color-on-ink-1200.png`.
+
+### Favicons and avatar
+
+`build/favicon/` holds everything a website header or an account profile needs. All three files are the Icon centred on a solid Ink tile: a favicon or an avatar has to survive light and dark backgrounds, and iOS flattens transparency to black, so the tile is never transparent. The ramp Voxels read on Ink in both.
+
+| File | What it is |
+|---|---|
+| `favicon.ico` | One `.ico` containing 16, 32 and 48 px images |
+| `apple-touch-icon.png` | 180 × 180, for iOS home screens |
+| `avatar-512.png` | 512 × 512 square, for GitHub, Slack and social accounts |
+
+The Icon is designed to stay legible at 16px, and `test/icon.test.js` checks the smallest favicon layer for it.
 
 The Tagline is converted to outlines from `src/fonts/JetBrainsMono-SemiBold.ttf` (SIL Open Font License, see `src/fonts/JetBrainsMono-OFL.txt`), so no output depends on an installed font.
 
@@ -60,6 +73,7 @@ Everything comes from [`src/brand.json`](src/brand.json):
 
 - `transferFunctionRamp`: the seven ramp colours, applied to the Voxels by column from left to right.
 - `wordmark.letters`: one five-row grid per letter. `#` is a Voxel, `o` is a Hollow Voxel, `.` is empty.
+- `icon.grid`: the Icon, a single voxel "i" on its own grid, same cell grammar. The tittle is its hand-placed Hollow Voxel.
 - `wordmark.letterGap`: empty columns between letters.
 - `colours`: Ink and white, used by the one-colour versions and for the Tagline.
 - `tagline.lines`: the Tagline, one entry per line, always lowercase. `tagline.font` is the font it is outlined from.

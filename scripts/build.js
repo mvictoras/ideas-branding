@@ -3,12 +3,16 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadBrand } from "./lib/brand.js";
-import { COLOUR_VERSIONS, PIECES, composeLogo } from "./lib/logo.js";
+import { COLOUR_VERSIONS, PIECES, composeLogo, iconTileScene } from "./lib/logo.js";
 import { sceneToSvg } from "./lib/svg.js";
 import { sceneToPdf } from "./lib/pdf.js";
 import { svgToPng } from "./lib/png.js";
+import { icoFromPngs } from "./lib/ico.js";
 
 const PNG_WIDTHS = [400, 800, 1200, 2400];
+const FAVICON_SIZES = [16, 32, 48];
+const APPLE_TOUCH_SIZE = 180;
+const AVATAR_SIZE = 512;
 const OUT = fileURLToPath(new URL("../build/", import.meta.url));
 
 function write(rel, data) {
@@ -32,3 +36,12 @@ for (const piece of PIECES) {
     write(`${name}.pdf`, await sceneToPdf(scene));
   }
 }
+
+console.log("Building build/favicon/");
+const tile = sceneToSvg(iconTileScene(brand));
+write(
+  "favicon/favicon.ico",
+  icoFromPngs(FAVICON_SIZES.map((size) => ({ size, png: svgToPng(tile, size) }))),
+);
+write("favicon/apple-touch-icon.png", svgToPng(tile, APPLE_TOUCH_SIZE));
+write(`favicon/avatar-${AVATAR_SIZE}.png`, svgToPng(tile, AVATAR_SIZE));

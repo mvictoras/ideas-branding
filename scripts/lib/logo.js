@@ -7,7 +7,7 @@
 //   { type: "rect", x, y, width, height, rx, fill } or { ..., fill: "none", stroke, strokeWidth }
 //   { type: "circle", cx, cy, r }            (painted by its group)
 //   { type: "path", x, y, d }                (a glyph outline at x, y; painted by its group)
-import { layOutWordmark } from "./brand.js";
+import { layOutIcon, layOutWordmark } from "./brand.js";
 import { outlineTagline } from "./tagline.js";
 
 const CELL = 10; // drawing units per Voxel
@@ -30,7 +30,7 @@ const HORIZONTAL_GAP = 2 * CELL; // Wordmark to Tagline
 const STACKED_GAP = 1.5 * CELL; // Wordmark to the Tagline's ascenders
 const LINE_HEIGHT = 1.25; // × font size
 
-export const PIECES = ["wordmark", "wordmark-hero", "horizontal-lockup", "stacked-lockup"];
+export const PIECES = ["wordmark", "wordmark-hero", "horizontal-lockup", "stacked-lockup", "icon"];
 export const COLOUR_VERSIONS = ["color-on-light", "color-on-ink", "mono-ink", "mono-white"];
 
 // Voxels: "ramp" or a single colour. Foreground: the Tagline and the Volume Grid.
@@ -145,7 +145,31 @@ export function composeLogo(brand, piece, version) {
       };
     }
 
+    case "icon":
+      return wordmarkScene(layOutIcon(brand), { title: name, voxelColour: voxels });
+
     default:
       throw new Error(`Unknown Logo piece "${piece}"`);
   }
+}
+
+// The favicon tile: the Icon centred on a solid square. Favicons, the Apple
+// touch icon and avatars have to survive any background — and iOS flattens
+// transparency to black — so the tile is filled with Ink, the brand's dark
+// ground, and the Voxels take the full ramp.
+const TILE_PAD = 0.5; // empty cells of Ink around the Icon
+
+/** The Icon on its solid square tile, for the favicon set. */
+export function iconTileScene(brand) {
+  const layout = layOutIcon(brand);
+  const side = Math.max(layout.columns, layout.rows) + 2 * TILE_PAD;
+  return {
+    width: side * CELL,
+    height: side * CELL,
+    title: brand.wordmark.text,
+    children: [
+      { type: "rect", x: 0, y: 0, width: side * CELL, height: side * CELL, fill: brand.colours.ink },
+      ...wordmarkNodes(layout, "ramp", ((side - layout.columns) / 2) * CELL, ((side - layout.rows) / 2) * CELL),
+    ],
+  };
 }
