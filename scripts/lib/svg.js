@@ -1,33 +1,32 @@
-// Renders a laid-out Voxel grid as SVG.
+// Renders a scene (see logo.js) as SVG.
 
-const CELL = 10; // SVG units per Voxel
-const PAD = 1; // empty Voxels of margin on every side
-const INSET = 1; // gap between a Voxel and its cell edge
-const STROKE = 1.5; // Hollow Voxel outline width
-const RADIUS = 1.5;
+const escape = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const attrs = (pairs) =>
+  Object.entries(pairs)
+    .filter(([, v]) => v !== undefined)
+    .map(([k, v]) => ` ${k}="${escape(v)}"`)
+    .join("");
 
-const n = (v) => +v.toFixed(3);
-
-function voxelRect({ col, row, hollow, colour }) {
-  const x = (col + PAD) * CELL;
-  const y = (row + PAD) * CELL;
-  if (hollow) {
-    // Stroke centred on the path: keep the outer edge flush with a filled Voxel.
-    const i = INSET + STROKE / 2;
-    const s = CELL - 2 * i;
-    return `<rect x="${n(x + i)}" y="${n(y + i)}" width="${n(s)}" height="${n(s)}" rx="${RADIUS}" fill="none" stroke="${colour}" stroke-width="${STROKE}"/>`;
+function node(el) {
+  switch (el.type) {
+    case "g":
+      return [`<g${attrs({ id: el.id, fill: el.fill, opacity: el.opacity })}>`, ...el.children.map(node), `</g>`].join("\n");
+    case "rect":
+      return `<rect${attrs({ x: el.x, y: el.y, width: el.width, height: el.height, rx: el.rx, fill: el.fill, stroke: el.stroke, "stroke-width": el.strokeWidth })}/>`;
+    case "circle":
+      return `<circle${attrs({ cx: el.cx, cy: el.cy, r: el.r })}/>`;
+    case "path":
+      return `<path${attrs({ transform: `translate(${el.x} ${el.y})`, d: el.d })}/>`;
+    default:
+      throw new Error(`Unknown scene node "${el.type}"`);
   }
-  const s = CELL - 2 * INSET;
-  return `<rect x="${x + INSET}" y="${y + INSET}" width="${s}" height="${s}" rx="${RADIUS}" fill="${colour}"/>`;
 }
 
-export function voxelGridSvg({ columns, rows, voxels }, { label }) {
-  const w = (columns + 2 * PAD) * CELL;
-  const h = (rows + 2 * PAD) * CELL;
+export function sceneToSvg({ width, height, title, children }) {
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${label}">`,
-    `<title>${label}</title>`,
-    ...voxels.map(voxelRect),
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="${escape(title)}">`,
+    `<title>${escape(title)}</title>`,
+    ...children.map(node),
     `</svg>`,
     "",
   ].join("\n");

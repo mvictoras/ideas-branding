@@ -18,12 +18,27 @@ npm run build
 
 This deletes `build/` and regenerates it from scratch. `build/` is the release. Nothing in it is edited by hand, and it is not committed.
 
-Current outputs:
+Outputs, under `build/logo/<piece>/`:
 
-| File | What it is |
+| Piece | What it is |
 |---|---|
-| `build/logo/wordmark/ideas-wordmark-color-on-light.svg` | Wordmark, full colour, for light backgrounds (transparent) |
-| `build/logo/wordmark/ideas-wordmark-color-on-light-1200.png` | The same, 1200 px wide |
+| `wordmark` | The Wordmark alone |
+| `wordmark-hero` | The Wordmark on the Volume Grid, for large hero uses only |
+| `horizontal-lockup` | The Wordmark with the two-line Tagline beside it, as in the website header |
+| `stacked-lockup` | The Wordmark with the Tagline beneath it, for square spaces |
+
+Each piece comes in four colour versions. All have transparent backgrounds:
+
+| Version | Voxels | Tagline and Volume Grid | Use on |
+|---|---|---|---|
+| `color-on-light` | Transfer-Function Ramp | Ink | white and light backgrounds |
+| `color-on-ink` | Transfer-Function Ramp | white | Ink and other dark backgrounds |
+| `mono-ink` | Ink | Ink | where colour isn't allowed or doesn't print well |
+| `mono-white` | white | white | dark photos and coloured backgrounds |
+
+Every piece and colour version is written as `ideas-<piece>-<version>.svg`, `.pdf` (vector) and `-<width>.png` at 400, 800, 1200 and 2400 px wide. For example, `build/logo/horizontal-lockup/ideas-horizontal-lockup-color-on-ink-1200.png`.
+
+The Tagline is converted to outlines from `src/fonts/JetBrainsMono-SemiBold.ttf` (SIL Open Font License, see `src/fonts/JetBrainsMono-OFL.txt`), so no output depends on an installed font.
 
 ## Test
 
@@ -46,6 +61,8 @@ Everything comes from [`src/brand.json`](src/brand.json):
 - `transferFunctionRamp`: the seven ramp colours, applied to the Voxels by column from left to right.
 - `wordmark.letters`: one five-row grid per letter. `#` is a Voxel, `o` is a Hollow Voxel, `.` is empty.
 - `wordmark.letterGap`: empty columns between letters.
+- `colours`: Ink and white, used by the one-colour versions and for the Tagline.
+- `tagline.lines`: the Tagline, one entry per line, always lowercase. `tagline.font` is the font it is outlined from.
 
 Edit the file, then run `npm test`.
 
@@ -63,6 +80,7 @@ This writes `review/wordmark-grid.html`, which shows the frozen prototype grid n
 
 ```
 src/brand.json   single source of truth
+src/fonts/       the Tagline font (JetBrains Mono, OFL) used for outlining
 scripts/         the build (scripts/build.js is the entry point) and the grid preview
 test/            checks over build/
 assets/partners/ official partner logos and their sources

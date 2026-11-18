@@ -1,6 +1,10 @@
 {
   "$comment": "Single source of truth for the IDEAS Logo. Edit here, then run `npm run build`. Letter grids: '#' = Voxel, 'o' = Hollow Voxel, '.' = empty. Option A letterforms from the www-ideas prototype, refined and approved by the IDEAS lead in #3: one hand-placed Hollow Voxel per letter on a stroke end, 5x22 grid. Tests pin the Hollow Voxel positions, so moving one is a deliberate change to the test too.",
   "transferFunctionRamp": ["#1e3a8a", "#1d4ed8", "#0284c7", "#0ea5e9", "#14b8a6", "#84cc16", "#f59e0b"],
+  "colours": {
+    "ink": "#0b1f3a",
+    "white": "#ffffff"
+  },
   "wordmark": {
     "text": "IDEAS",
     "letterGap": 1,
@@ -11,5 +15,10 @@
       "A": [".##.", "#..#", "####", "#..#", "#..o"],
       "S": [".##o", "#...", ".##.", "...#", "###."]
     }
+  },
+  "tagline": {
+    "$comment": "Always lowercase inside the Logo. Each entry is one line of the two-line Tagline; outlined from the font file at build time, so no output depends on an installed font.",
+    "lines": ["intelligent data exploration", "assistant for science"],
+    "font": "fonts/JetBrainsMono-SemiBold.ttf"
   }
 }

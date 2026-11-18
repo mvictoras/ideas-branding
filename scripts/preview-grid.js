@@ -5,7 +5,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { loadBrand, layOutWordmark } from "./lib/brand.js";
-import { voxelGridSvg } from "./lib/svg.js";
+import { wordmarkScene } from "./lib/logo.js";
+import { sceneToSvg } from "./lib/svg.js";
 
 // The www-ideas prototype (option A) as first imported in bb14b03, with the
 // Hollow Voxels where the formula (x*7+y*3)%11 put them. Frozen for comparison.
@@ -24,7 +25,7 @@ const OUT = fileURLToPath(new URL("../review/wordmark-grid.html", import.meta.ur
 const brand = loadBrand();
 const variant = (name, note, letters) => {
   const layout = layOutWordmark({ ...brand, wordmark: { ...brand.wordmark, letters } });
-  return { name, note, layout, svg: voxelGridSvg(layout, { label: brand.wordmark.text }) };
+  return { name, note, layout, svg: sceneToSvg(wordmarkScene(layout, { title: brand.wordmark.text })) };
 };
 const variants = [
   variant("Prototype", "Hollow Voxels placed by formula", PROTOTYPE_LETTERS),
