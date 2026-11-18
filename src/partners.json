@@ -69,6 +69,17 @@
         "minimum": null,
         "coBranding": "Trademarked; Kitware granted IDEAS permission to use it (#7)."
       }
+    },
+    {
+      "id": "veeda",
+      "name": "Veeda AI",
+      "file": "veeda-logotype.png",
+      "source": ["https://www.veeda.ai/", "https://www.veeda.ai/logotype.lottie"],
+      "rules": {
+        "clearSpace": { "ratio": 0.25, "basis": "No published rule. IDEAS default: a quarter of the logo height." },
+        "minimum": null,
+        "coBranding": "No brand page or usage rules published. Veeda publishes its logotype only as an animation; the strip uses frame 340, the frame veeda.ai itself shows as the static logo for reduced-motion visitors."
+      }
     }
   ],
   "strip": {

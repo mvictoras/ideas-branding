@@ -109,35 +109,65 @@ export function cleanedLogo(institution) {
   return document(h * institution.aspect + 2 * pad, h + 2 * pad, institution.name, [slotNode({ institution, x: pad, y: pad, height: h })]);
 }
 
+const SCREEN_DPI = 96; // for minimums given in screen pixels
+
+/** The smallest ink height, in points, that meets the institution's own minimum size. */
+function minimumHeight({ rules, aspect }) {
+  const min = rules.minimum;
+  if (!min) return 0;
+  const inches = Math.max(min.heightIn ?? 0, (min.widthIn ?? 0) / aspect, (min.widthPx ?? 0) / SCREEN_DPI / aspect);
+  return inches * PT_PER_IN;
+}
+
+/** Places the logos left to right; `heightOf(institution)` gives each ink height in points. */
+function placeRow(institutions, heightOf, minGap) {
+  const items = institutions.map((institution) => {
+    const height = heightOf(institution);
+    return { institution, height, width: height * institution.aspect, clear: institution.clearSpace * height };
+  });
+  let x = items[0].clear;
+  items.forEach((it, i) => {
+    if (i > 0) x += Math.max(minGap, items[i - 1].clear, it.clear);
+    it.x = x;
+    x += it.width;
+  });
+  return { items, width: x + items.at(-1).clear };
+}
+
 /**
  * Lays the strip out `widthIn` wide. A logo of ink aspect a is s / a^k tall
  * (k = opticalWeight), so all logos carry similar visual weight. Neighbours are
  * at least gap × s apart and never inside either one's clear space; the ends
- * and the top and bottom keep each logo's clear space too. Everything scales
- * with s, so lay out at s = 1 and scale to the width.
+ * and the top and bottom keep each logo's clear space too.
+ *
+ * A partner's minimum size takes precedence over strip sizing (#1): a logo that
+ * would fall below its minimum is drawn at the minimum instead and the rest
+ * shrink to fit, unless the size lists it in `pendingWaivers`.
  */
-export function layOutStrip(institutions, { opticalWeight, gap }, widthIn) {
-  const items = institutions.map((p) => {
-    const h = p.aspect ** -opticalWeight;
-    return { institution: p, h, w: h * p.aspect, clear: p.clearSpace * h };
-  });
-  let x = items[0].clear;
-  items.forEach((it, i) => {
-    if (i > 0) {
-      const prev = items[i - 1];
-      x += Math.max(gap, prev.clear, it.clear);
+export function layOutStrip(institutions, { opticalWeight, gap }, { widthIn, pendingWaivers }) {
+  const target = widthIn * PT_PER_IN;
+  const atMinimum = new Map(); // id -> ink height in points
+  const rowAt = (s) => placeRow(institutions, (p) => atMinimum.get(p.id) ?? s * p.aspect ** -opticalWeight, gap * s);
+  for (;;) {
+    // The row's width grows with s: bisect for the s that fills the target.
+    let lo = 0;
+    let hi = target;
+    if (rowAt(lo).width > target) throw new Error(`Logos held at their minimum sizes don't fit a ${widthIn} in strip`);
+    for (let i = 0; i < 60; i++) {
+      const mid = (lo + hi) / 2;
+      if (rowAt(mid).width > target) hi = mid;
+      else lo = mid;
     }
-    it.x = x;
-    x += it.w;
-  });
-  const unitWidth = x + items.at(-1).clear;
-  const unitHeight = Math.max(...items.map((it) => it.h + 2 * it.clear));
-  const s = (widthIn * PT_PER_IN) / unitWidth;
-  return {
-    width: unitWidth * s,
-    height: unitHeight * s,
-    items: items.map((it) => ({ institution: it.institution, x: it.x * s, y: ((unitHeight - it.h) / 2) * s, height: it.h * s })),
-  };
+    const row = rowAt(lo);
+    const tooSmall = row.items.filter(
+      ({ institution, height }) => !atMinimum.has(institution.id) && !pendingWaivers.includes(institution.id) && height < minimumHeight(institution),
+    );
+    if (tooSmall.length === 0) {
+      const height = Math.max(...row.items.map((it) => it.height + 2 * it.clear));
+      return { width: target, height, items: row.items.map(({ institution, x, height: h }) => ({ institution, x, y: (height - h) / 2, height: h })) };
+    }
+    for (const { institution } of tooSmall) atMinimum.set(institution.id, minimumHeight(institution));
+  }
 }
 
 const STRIP_TITLE = "IDEAS partners";

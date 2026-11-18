@@ -21,6 +21,9 @@ Retrieved 2026-11-18. Each SVG was checked to be real SVG (it starts with `<svg`
 | uic-white.png | Univ. of Illinois Chicago | PNG, opaque | 1650×600 px | Brand-page preview: white logo **on a navy background baked into the image** |
 | kitware-color.svg | Kitware, Inc. | SVG | viewBox 792×245 | Inline header logo from kitware.com (`#0068C7` / `#3EAE2B`) |
 | kitware-color.png | Kitware, Inc. | PNG, RGBA, transparent | 2842×730 px | Official press-room high-resolution logo |
+| veeda-logotype.png | Veeda AI | PNG, RGBA, transparent | 2125×480 px | Frame 340 of Veeda's official animated logotype (`veeda-logotype.lottie`), rendered with Veeda's own player; see below |
+| veeda-logotype.lottie | Veeda AI | dotLottie (zip) | 3840×2160 composition, 361 frames at 60 fps | The animated header logotype from www.veeda.ai, unchanged |
+| veeda-mark.svg | Veeda AI | SVG | viewBox -8 -38 277 260 | The site favicon: the gradient mark alone (not used in the strip) |
 
 ## Argonne National Laboratory
 
@@ -107,3 +110,13 @@ Retrieved 2026-11-18. Each SVG was checked to be real SVG (it starts with `<svg`
   - SVG extracted from the https://www.kitware.com/ site header
 - Other files on the press page: Kitware-Logo-Stacked.png, Kitware-Logo-Tagline.png, Kitware-Mark.png (not copied).
 - Usage rules: "Our logo is trademarked. Please contact us for permission to use." (https://www.kitware.com/contact/). No reversed or white version is offered.
+
+## Veeda AI
+
+- Website: https://www.veeda.ai/ (no brand, press or media page; `/press`, `/brand` and similar return the home page)
+- Direct files:
+  - https://www.veeda.ai/logotype.lottie (`veeda-logotype.lottie`, SHA-256 `20eed604…e458`): the header logotype, published only as an animation. It ends on the gradient mark and the word "veeda".
+  - https://www.veeda.ai/favicon.svg (`veeda-mark.svg`): the gradient mark alone.
+- **How `veeda-logotype.png` was made** (the one partner file that is not a published static file, approved by the IDEAS lead on 2026-11-18): the home page script shows the logo frozen at frame 340 to visitors who prefer reduced motion, so frame 340 is Veeda's own static form of the logotype. It was rendered with the player that veeda.ai itself serves (`/vendor/dotlottie-wc.js` and `/vendor/dotlottie-player.wasm`, dotlottie-web 0.83.2) in headless Chrome. The composition was drawn at 6720×3780 px with no background, the canvas pixels were read directly, and the result was cropped to the logotype plus 16 transparent pixels. Colours and shapes are exactly as the player draws them, with no recolouring or editing. Replace it with an official static SVG if Veeda provides one.
+- Usage rules: none published. No clear space, minimum size or co-branding rules. Ask Veeda for a static logo file and rules.
+

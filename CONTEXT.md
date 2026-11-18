@@ -67,9 +67,9 @@ The official IDEAS PowerPoint template used for every IDEAS presentation.
 _Avoid_: deck, theme, master
 
 **Partner Strip**:
-The full-colour row of institution logos in the slide footer: Argonne (the lead lab) first, then the university Partners alphabetically by full name, then Kitware last. Shown large on title and closing slides and small on content slides.
+The full-colour row of institution logos in the slide footer: Argonne (the lead lab) first, then the university Partners alphabetically by full name, then Kitware, then Veeda AI last. Shown large on title and closing slides and small on content slides.
 _Avoid_: logo bar, sponsor row
 
 **Partner**:
-An external institution contributing to IDEAS: University of Nebraska–Lincoln, UC Davis, University of Cincinnati, UIC, Kitware. Argonne leads IDEAS and is not a Partner, but it appears first in the Partner Strip.
+An external institution contributing to IDEAS: University of Nebraska–Lincoln, UC Davis, University of Cincinnati, UIC, Kitware, Veeda AI. Argonne leads IDEAS and is not a Partner, but it appears first in the Partner Strip.
 _Avoid_: sponsor, collaborator

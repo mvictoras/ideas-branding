@@ -66,8 +66,8 @@ const writeSvgAndPng = (name, { svg, widthIn }) => {
   write(`${name}.png`, svgToPng(svg, Math.round(widthIn * PARTNER_PNG_DPI)));
 };
 for (const institution of institutions) writeSvgAndPng(`partner-strip/logos/${institution.id}`, cleanedLogo(institution));
-for (const [size, { widthIn }] of Object.entries(stripConfig.strip.sizes)) {
-  const layout = layOutStrip(institutions, stripConfig.strip, widthIn);
+for (const [size, sizeSpec] of Object.entries(stripConfig.strip.sizes)) {
+  const layout = layOutStrip(institutions, stripConfig.strip, sizeSpec);
   writeSvgAndPng(`partner-strip/ideas-partner-strip-${size}-on-light`, stripOnLight(layout));
   writeSvgAndPng(`partner-strip/ideas-partner-strip-${size}-white-band`, stripOnWhiteBand(layout, stripConfig.strip.whiteBand));
 }

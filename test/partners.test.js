@@ -13,9 +13,9 @@ const institutions = config.institutions;
 const SIZES = ["large", "small"];
 const VERSIONS = ["on-light", "white-band"];
 // The order the IDEAS lead set (#1, #7): Argonne leads, the universities
-// alphabetically by full name, Kitware last. Pinned on purpose: change it here
-// too when the lead changes the strip's membership or order.
-const SPEC_ORDER = ["argonne", "ucdavis", "cincinnati", "uic", "unl", "kitware"];
+// alphabetically by full name, then Kitware, then Veeda AI last. Pinned on
+// purpose: change it here too when the lead changes the strip's membership or order.
+const SPEC_ORDER = ["argonne", "ucdavis", "cincinnati", "uic", "unl", "kitware", "veeda"];
 const WHITE = "#ffffff";
 
 const logoPath = (id, ext) => buildPath(`partner-strip/logos/${id}.${ext}`);
@@ -118,10 +118,13 @@ test("the strips show the logos in the configured order, centred on one line", (
 test("the strips give the logos consistent visual weight", () => {
   each((size, version) => {
     const { slots } = readStrip(size, version);
-    // Equal visual weight, not equal height: wide wordmarks sit lower.
-    const areas = slots.map((s) => s.width * s.height);
+    // Equal visual weight, not equal height: wide wordmarks sit lower. A logo
+    // enlarged to its partner's minimum size is allowed to stand out.
+    const atMinimum = (s) => isAtMinimum(s);
+    assert.ok(slots.filter(atMinimum).every((m) => slots.filter((s) => !atMinimum(s)).every((s) => m.width * m.height > s.width * s.height)), `${size} ${version}: enlarged logos`);
+    const areas = slots.filter((s) => !atMinimum(s)).map((s) => s.width * s.height);
     assert.ok(Math.max(...areas) / Math.min(...areas) < 1.05, `${size} ${version}: ink areas ${areas.map(Math.round)}`);
-    const heights = slots.map((s) => s.height);
+    const heights = slots.filter((s) => !atMinimum(s)).map((s) => s.height);
     assert.ok(Math.max(...heights) / Math.min(...heights) < 1.7, `${size} ${version}: heights ${heights.map(Math.round)}`);
   });
 });
@@ -144,6 +147,19 @@ test("each institution's clear space is kept free in the strips and the cleaned 
     });
   }
 });
+
+/** The slot's size in inches and its institution's minimum size rule. */
+function sizeAndMinimum(s) {
+  return { w: inches(s.width), h: inches(s.height), min: rulesOf(s.id).minimum };
+}
+
+/** Whether the logo is drawn exactly at its partner's minimum size (held there by the layout). */
+function isAtMinimum(s) {
+  const { w, h, min } = sizeAndMinimum(s);
+  if (!min) return false;
+  const near = (a, b) => b && Math.abs(a - b) < 0.002;
+  return near(w, min.widthIn) || near(w * SCREEN_DPI, min.widthPx) || near(h, min.heightIn);
+}
 
 /** Institutions whose minimum size the strip breaks. */
 function belowMinimum(slots) {

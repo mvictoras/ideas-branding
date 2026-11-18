@@ -89,7 +89,7 @@ The Tagline is converted to outlines from `src/fonts/JetBrainsMono-SemiBold.ttf`
 
 ### Partner Strip
 
-`build/partner-strip/` holds the Partner Strip and the cleaned-up logos it is built from (Argonne, which leads IDEAS, and the five Partners), generated from [`src/partners.json`](src/partners.json) and the official files in `assets/partners/raw/` (sources and usage rules in [`SOURCES.md`](assets/partners/raw/SOURCES.md)).
+`build/partner-strip/` holds the Partner Strip and the cleaned-up logos it is built from (Argonne, which leads IDEAS, and the six Partners), generated from [`src/partners.json`](src/partners.json) and the official files in `assets/partners/raw/` (sources and usage rules in [`SOURCES.md`](assets/partners/raw/SOURCES.md)).
 
 | File | What it is |
 |---|---|
@@ -103,11 +103,11 @@ The SVGs carry their physical size in inches; the PNGs are rendered at 192 dpi.
 
 **No recolouring.** Each logo is the institution's own file, embedded byte for byte and only cropped and scaled uniformly. `test/partners.test.js` checks this for every logo in every file. If a variant is missing, ask the institution for it; never recolour or redraw one.
 
-**Order and membership** come from the order of `institutions` in `src/partners.json`: Argonne first, the universities alphabetically by full name, Kitware last. To add, remove or reorder one, edit that list and run `npm test`. `test/partners.test.js` pins the order the IDEAS lead set, so update its `SPEC_ORDER` in the same change.
+**Order and membership** come from the order of `institutions` in `src/partners.json`: Argonne first, the universities alphabetically by full name, then Kitware, then Veeda AI last. To add, remove or reorder one, edit that list and run `npm test`. `test/partners.test.js` pins the order the IDEAS lead set, so update its `SPEC_ORDER` in the same change.
 
-**Sizing.** Logos get equal visual weight rather than equal height: a logo whose ink is a times wider than tall is drawn s / √a tall (`strip.opticalWeight` 0.5). Neighbours keep at least `strip.gap` × s between them and never come inside either partner's clear space. Clear space and minimum sizes are each institution's own rules, recorded under its `rules`.
+**Sizing.** Logos get equal visual weight rather than equal height: a logo whose ink is a times wider than tall is drawn s / √a tall (`strip.opticalWeight` 0.5). Neighbours keep at least `strip.gap` × s between them and never come inside either partner's clear space. Clear space and minimum sizes are each institution's own rules, recorded under its `rules`. A partner's minimum size takes precedence over strip sizing: a logo that would fall below its minimum is drawn at the minimum instead, and the others shrink to fit (in the large strip UNL is held at 0.5 in, in the small one UC Davis at 1 in).
 
-The large strip meets every institution's minimum size. The small strip can't: UNL needs 0.5 in of height and Cincinnati 0.75 in (80 px) of width, more than a footer strip leaves. Those two are listed in `strip.sizes.small.pendingWaivers` while waivers are requested (#7). The test fails if any other logo drops below its minimum, so empty that list once the waivers are granted, or resize.
+The large strip meets every institution's minimum size. The small strip can't: holding UNL at 0.5 in tall and Cincinnati at 0.75 in (80 px) wide would leave too little width for the rest. Those two are listed in `strip.sizes.small.pendingWaivers` while waivers are requested (#7), so they are not enlarged there. If a waiver is refused, remove that partner from the list: the layout then holds it at its minimum and shrinks the others. The test fails if any logo not on the list is below its minimum.
 
 ## Test
 
