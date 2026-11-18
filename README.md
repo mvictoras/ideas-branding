@@ -49,13 +49,21 @@ Everything comes from [`src/brand.json`](src/brand.json):
 
 Edit the file, then run `npm test`.
 
-The letterforms and Hollow Voxels are still the www-ideas prototype (option A) as-is. That grid is 5×22 Voxels, although the prototype labelled it 5×19. It is a placeholder until the refined grid has been reviewed (#3).
+The grid is option A from the www-ideas prototype, refined and approved in #3: 5×22 Voxels with one hand-placed Hollow Voxel per letter. `test/wordmark.test.js` pins the Hollow Voxel positions and the Voxel counts, so changing the grid means updating that test as well, after review.
+
+### Reviewing a grid change
+
+```sh
+npm run preview:grid
+```
+
+This writes `review/wordmark-grid.html`, which shows the frozen prototype grid next to the grid in `src/brand.json`. It shows four sizes, on light and on Ink. `review/` is not committed.
 
 ## Layout
 
 ```
 src/brand.json   single source of truth
-scripts/         the build (scripts/build.js is the entry point)
+scripts/         the build (scripts/build.js is the entry point) and the grid preview
 test/            checks over build/
 assets/partners/ official partner logos and their sources
 ```

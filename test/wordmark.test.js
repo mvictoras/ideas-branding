@@ -29,6 +29,24 @@ test("Wordmark Voxels and Hollow Voxels sit where the source definition puts the
   assert.deepEqual(voxelPicture(voxels), expected);
 });
 
+// The refined grid approved by the IDEAS lead in #3: one Hollow Voxel per
+// letter, on a stroke end. Pinned here so a source edit can't move them silently.
+test("Wordmark has the approved Hollow Voxel positions and Voxel counts", () => {
+  const voxels = readVoxels(readWordmarkSvg());
+  const at = (v) => [v.row, v.col];
+  const byPosition = (a, b) => a[1] - b[1] || a[0] - b[0];
+
+  assert.deepEqual(
+    voxels.filter((v) => v.hollow).map(at).sort(byPosition),
+    [[0, 0], [4, 6], [2, 10], [4, 16], [0, 21]],
+    "Hollow Voxels as [row, col]: I top-left, D bottom, E middle arm, A right foot, S top-right",
+  );
+  assert.equal(voxels.filter((v) => !v.hollow).length, 48, "filled Voxel count");
+  assert.equal(voxels.length, 53, "total Voxel count");
+  assert.equal(Math.max(...voxels.map((v) => v.row)) + 1, 5, "grid rows");
+  assert.equal(Math.max(...voxels.map((v) => v.col)) + 1, 22, "grid columns");
+});
+
 test("Wordmark Voxels are coloured by the Transfer-Function Ramp from left to right", () => {
   const voxels = readVoxels(readWordmarkSvg()).sort((a, b) => a.col - b.col);
   const step = (v) => RAMP.indexOf(v.colour);

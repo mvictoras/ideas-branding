@@ -1,15 +1,15 @@
 {
-  "$comment": "Single source of truth for the IDEAS Logo. Edit here, then run `npm run build`. Letter grids: '#' = Voxel, 'o' = Hollow Voxel, '.' = empty. The letterforms and Hollow Voxels are still the www-ideas prototype (option A) as-is: the Hollow Voxels are where the prototype formula (x*7+y*3)%11 put them, and the grid is 5x22 (the prototype labelled it 5x19). Both are placeholders until the refined grid is reviewed (#3).",
+  "$comment": "Single source of truth for the IDEAS Logo. Edit here, then run `npm run build`. Letter grids: '#' = Voxel, 'o' = Hollow Voxel, '.' = empty. Option A letterforms from the www-ideas prototype, refined and approved by the IDEAS lead in #3: one hand-placed Hollow Voxel per letter on a stroke end, 5x22 grid. Tests pin the Hollow Voxel positions, so moving one is a deliberate change to the test too.",
   "transferFunctionRamp": ["#1e3a8a", "#1d4ed8", "#0284c7", "#0ea5e9", "#14b8a6", "#84cc16", "#f59e0b"],
   "wordmark": {
     "text": "IDEAS",
     "letterGap": 1,
     "letters": {
       "I": ["o##", ".#.", ".#.", ".#.", "###"],
-      "D": ["###.", "#..#", "#..o", "#..#", "###."],
-      "E": ["##o", "o..", "##.", "#..", "###"],
-      "A": [".##.", "#..#", "####", "#..o", "#..#"],
-      "S": [".###", "#...", ".##.", "...#", "###."]
+      "D": ["###.", "#..#", "#..#", "#..#", "##o."],
+      "E": ["###", "#..", "#o.", "#..", "###"],
+      "A": [".##.", "#..#", "####", "#..#", "#..o"],
+      "S": [".##o", "#...", ".##.", "...#", "###."]
     }
   }
 }
