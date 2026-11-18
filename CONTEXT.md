@@ -52,6 +52,14 @@ _Avoid_: gradient, rainbow, colormap (in brand docs)
 The deep navy (`#0b1f3a`) used for text on light backgrounds and as the dark background colour.
 _Avoid_: black, dark blue
 
+**Background**:
+The light off-white (`#f7f8fb`) behind content slides and light pages.
+_Avoid_: white, paper, light grey
+
+**Theme Accents**:
+The six chart and accent colours of the Slide Template, taken from the Transfer-Function Ramp in a fixed order chosen so neighbouring chart series stay distinguishable.
+_Avoid_: chart palette, series colours
+
 ### Presentations
 
 **Slide Template**:

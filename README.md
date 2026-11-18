@@ -51,6 +51,21 @@ Every piece and colour version is written as `ideas-<piece>-<version>.svg`, `.pd
 
 The Icon is designed to stay legible at 16px, and `test/icon.test.js` checks the smallest favicon layer for it.
 
+### Colours
+
+`build/colours/` publishes the brand colours, generated from `src/brand.json`:
+
+| File | What it is |
+|---|---|
+| `ideas-colours.json` | Ink, Background, white, the seven Transfer-Function Ramp colours and the six Theme Accents |
+| `ideas-colours.css` | The same values as CSS custom properties on `:root`: `--ideas-ink`, `--ideas-background`, `--ideas-white`, `--ideas-ramp-1` to `-7`, `--ideas-accent-1` to `-6` |
+| `ideas-print-colours.md` | The print table: CMYK and the nearest Pantone ink for Ink, Background and each ramp colour |
+| `ideas-print-colours.csv` | The same table for spreadsheets |
+
+Every CMYK and Pantone value is a **nearest match, verify before printing**. CMYK is an uncalibrated conversion, and the Pantone entry is the closest ink in `src/pantone-solid-coated.json` by on-screen colour difference (CIEDE2000, given as ΔE in the table). Proof against a swatch book before printing.
+
+`test/colours.test.js` checks that Ink text on the Background and white text on Ink meet WCAG AA, and that neighbouring Theme Accents differ by at least ΔE 10.
+
 The Tagline is converted to outlines from `src/fonts/JetBrainsMono-SemiBold.ttf` (SIL Open Font License, see `src/fonts/JetBrainsMono-OFL.txt`), so no output depends on an installed font.
 
 ## Test
@@ -75,7 +90,8 @@ Everything comes from [`src/brand.json`](src/brand.json):
 - `wordmark.letters`: one five-row grid per letter. `#` is a Voxel, `o` is a Hollow Voxel, `.` is empty.
 - `icon.grid`: the Icon, a single voxel "i" on its own grid, same cell grammar. The tittle is solid, so it stays crisp at 16px. `icon.rampSteps` gives the ramp index for each row: unlike the Wordmark, the Icon's ramp runs top to bottom.
 - `wordmark.letterGap`: empty columns between letters.
-- `colours`: Ink and white, used by the one-colour versions and for the Tagline.
+- `colours`: Ink and white, used by the one-colour versions and for the Tagline, and the light Background.
+- `themeAccents`: the six Slide Template accent colours, in order, also published as tokens.
 - `tagline.lines`: the Tagline, one entry per line, always lowercase. `tagline.font` is the font it is outlined from.
 
 Edit the file, then run `npm test`.
@@ -93,9 +109,10 @@ This writes `review/wordmark-grid.html`, which shows the frozen prototype grid n
 ## Layout
 
 ```
-src/brand.json   single source of truth
-src/fonts/       the Tagline font (JetBrains Mono, OFL) used for outlining
-scripts/         the build (scripts/build.js is the entry point) and the grid preview
-test/            checks over build/
-assets/partners/ official partner logos and their sources
+src/brand.json                 single source of truth
+src/pantone-solid-coated.json  candidate Pantone inks for the print table
+src/fonts/                     the Tagline font (JetBrains Mono, OFL) used for outlining
+scripts/                       the build (scripts/build.js is the entry point) and the grid preview
+test/                          checks over build/
+assets/partners/               official partner logos and their sources
 ```

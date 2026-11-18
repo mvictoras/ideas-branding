@@ -8,6 +8,7 @@ import { sceneToSvg } from "./lib/svg.js";
 import { sceneToPdf } from "./lib/pdf.js";
 import { svgToPng } from "./lib/png.js";
 import { icoFromPngs } from "./lib/ico.js";
+import { colourTokensCss, colourTokensJson, loadPantoneInks, printTable, printTableCsv, printTableMarkdown } from "./lib/colours.js";
 
 const PNG_WIDTHS = [400, 800, 1200, 2400];
 const FAVICON_SIZES = [16, 32, 48];
@@ -46,3 +47,10 @@ write(
 );
 write("favicon/apple-touch-icon.png", svgToPng(tile, APPLE_TOUCH_SIZE));
 write(`favicon/avatar-${AVATAR_SIZE}.png`, svgToPng(tile, AVATAR_SIZE));
+
+console.log("Building build/colours/");
+write("colours/ideas-colours.json", colourTokensJson(brand));
+write("colours/ideas-colours.css", colourTokensCss(brand));
+const printRows = printTable(brand, loadPantoneInks());
+write("colours/ideas-print-colours.csv", printTableCsv(printRows));
+write("colours/ideas-print-colours.md", printTableMarkdown(printRows));

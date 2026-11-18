@@ -3,8 +3,10 @@
   "transferFunctionRamp": ["#1e3a8a", "#1d4ed8", "#0284c7", "#0ea5e9", "#14b8a6", "#84cc16", "#f59e0b"],
   "colours": {
     "ink": "#0b1f3a",
+    "background": "#f7f8fb",
     "white": "#ffffff"
   },
+  "themeAccents": ["#1d4ed8", "#0ea5e9", "#14b8a6", "#84cc16", "#f59e0b", "#1e3a8a"],
   "wordmark": {
     "text": "IDEAS",
     "letterGap": 1,
